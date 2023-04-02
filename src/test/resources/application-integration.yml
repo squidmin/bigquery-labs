@@ -1,0 +1,16 @@
+bigquery:
+  projectId: project-name_integration
+  datasetName: test_dataset_name_integration
+  tableName: test_table_name_integration
+  schema:
+    fields:
+      - name: id
+        type: string
+      - name: creation_timestamp
+        type: datetime
+      - name: last_update_timestamp
+        type: datetime
+      - name: column_a
+        type: string
+      - name: column_b
+        type: bool

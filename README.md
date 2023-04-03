@@ -163,7 +163,7 @@ $GCLOUD auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIAL
 $GCLOUD config set project ${GCP_PROJECT_ID}
 ```
 
-`ENV_GCP_PROJECT_ID` is the same project ID passed via the `docker run` command when starting the container.
+`GCP_PROJECT_ID` is the same project ID passed via the `docker run` command when starting the container.
 
 </details>
 

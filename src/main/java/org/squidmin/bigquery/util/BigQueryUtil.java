@@ -38,6 +38,7 @@ public class BigQueryUtil {
         log.info("Generating Schema object using CLI arg: \"" + schema + "\"...");
         List<Field> fields = new ArrayList<>();
         List<String> _fields = Arrays.stream(schema.split(";")).collect(Collectors.toList());
+        validateFields();
         _fields.forEach(
             f -> {
                 String[] split = f.split(",");
@@ -66,6 +67,11 @@ public class BigQueryUtil {
             log.error("Error: BigQueryConfig.translateType(): Data type not supported. Defaulting to 'StandardSQLTypeNames.STRING'.");
             return StandardSQLTypeName.STRING;
         }
+    }
+
+    private static boolean validateFields() {
+        // TODO
+        return false;
     }
 
 }

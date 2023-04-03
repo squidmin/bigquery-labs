@@ -3,35 +3,108 @@
 GCP BigQuery labs using the Java SDK.
 
 
-### Using Application Default Credentials (ADC)
-
-If you haven't done so already, install the `gcloud` SDK.
-
-After installing the `gcloud` SDK, run the following commands:
-
-```shell
-gcloud auth login
-gcloud auth application-default login
-```
-
-
-### Run the jar
+### Quickstart
 
 <details>
-<summary>Specify no profile</summary>
+<summary>Create and store a service account key</summary>
+
+**On macOS**, store the service account key at the location:
+
+`/Users/USERNAME/.config/gcloud`
+
+Replace the following:
+
+- `USERNAME`: the current user's username
+
+The `Dockerfile` will map the above directory to a volume on the container instance so that the **_service account key_** and **_application default credentials_** are available to the container instance.
+
+Read <a href="https://cloud.google.com/iam/docs/keys-create-delete#iam-service-account-keys-create-gcloud">here</a> for more information about creating service account keys.
+
+</details>
+
+
+<details>
+<summary>Add the Maven wrapper</summary>
+
+Ensure that Maven is already installed on the machine that will run the container.
+
+In the root of this project, run the command:
 
 ```shell
-mvn spring-boot:run
+mvn wrapper:wrapper
+```
+
+Read <a href="https://maven.apache.org/install.html">here</a> for more information about installing Maven.
+
+</details>
+
+
+<details>
+<summary>Build the container image</summary>
+
+```shell
+docker build -t bigquery-labs .
 ```
 
 </details>
 
 
 <details>
-<summary>Specify a profile</summary>
+<summary>Start a container instance</summary>
 
 ```shell
-mvn spring-boot:run -Dspring-boot.run.profiles=local
+docker run \
+--rm -it \
+-e GCP_PROJECT_ID=lofty-root-378503 \
+-v $HOME/.config/gcloud:/root/.config/gcloud \
+bigquery-labs
+```
+
+</details>
+
+
+<details>
+<summary>Activate GCP service account</summary>
+
+```shell
+/usr/local/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
+```
+
+`GOOGLE_APPLICATION_CREDENTIALS` will be stored as an environment variable in the container instance.
+
+</details>
+
+
+<details>
+<summary>Set the active GCP project</summary>
+
+```shell
+/usr/local/google-cloud-sdk/bin/gcloud config set project ${ENV_GCP_PROJECT_ID}
+```
+
+`ENV_GCP_PROJECT_ID` is the same project ID passed via the `docker run` command when starting the container.
+
+</details>
+
+
+<details>
+<summary>List available gcloud components</summary>
+
+```shell
+/usr/local/google-cloud-sdk/bin/gcloud components list
+```
+
+</details>
+
+
+<details>
+<summary>Application Default Credentials (ADC) usage</summary>
+
+In an interactive container instance, run the following commands:
+
+```shell
+/usr/local/google-cloud-sdk/bin/gcloud auth login
+/usr/local/google-cloud-sdk/bin/gcloud auth application-default login
 ```
 
 </details>
@@ -188,6 +261,28 @@ mvn -Dtest=ClassTest1#testHello* test
 
 ```shell
 mvn -Dtest=ClassTest1#testHello*+testMagic* test
+```
+
+</details>
+
+
+### Run the jar
+
+<details>
+<summary>Specify no profile</summary>
+
+```shell
+mvn spring-boot:run
+```
+
+</details>
+
+
+<details>
+<summary>Specify a profile</summary>
+
+```shell
+mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
 </details>

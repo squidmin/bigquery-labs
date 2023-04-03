@@ -241,7 +241,7 @@ The `-DargLine` parameter can also indicate the profile to activate.
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID for the GCP project to target.
+- `PROJECT_ID`: the project ID of the GCP project to target.
 
 For example, assuming the name of the profile to activate is `integration`:
 
@@ -267,8 +267,8 @@ For example, assuming the name of the profile to activate is `integration`:
 ```
 
 **Replace the following**:
-- `PROJECT_ID`: the project ID of the GCP project to target.
 - `PROFILE_NAME`: the name of the profile to activate.
+- `PROJECT_ID`: the project ID of the GCP project to target.
 
 Example:
 
@@ -288,12 +288,13 @@ Example:
 ```shell
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#createDataset \
-  test -P integration \
+  test -P PROFILE_NAME \
   -DprojectId="PROJECT_ID" \
   -DdatasetName="DATASET_NAME"
 ```
 
 **Replace the following**:
+- `PROFILE_NAME`: the name of the profile to activate.
 - `PROJECT_ID`: the project ID of the GCP project to target.
 - `DATASET_NAME`: the name of the dataset to target.
 
@@ -323,8 +324,8 @@ Example:
 ```
 
 **Replace the following**:
-- `PROFILE_NAME`: the name of the profile to activate for the method execution.
-- `PROJECT_ID`: the name of the GCP project ID to target.
+- `PROFILE_NAME`: the name of the profile to activate.
+- `PROJECT_ID`: the project ID of the GCP project to target.
 - `DATASET_NAME`: the name of the BigQuery dataset to target.
 - `TABLE_NAME`: the name of the BigQuery table to target.
 
@@ -356,7 +357,7 @@ Example using the `integration` profile:
 ```
 
 **Replace the following**:
-- `PROFILE_NAME`: the name of the profile to activate for the method execution.
+- `PROFILE_NAME`: the name of the profile to activate.
 - `PROJECT_ID`: the name of the GCP project ID to target.
 - `DATASET_NAME`: the name of the BigQuery dataset to target.
 - `TABLE_NAME`: the name of the BigQuery table to target.

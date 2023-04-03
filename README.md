@@ -241,6 +241,7 @@ The `-DargLine` parameter can also indicate the profile to activate.
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
+- `PROJECT_ID`: the project ID for the GCP project to target.
 
 For example, assuming the name of the profile to activate is `integration`:
 

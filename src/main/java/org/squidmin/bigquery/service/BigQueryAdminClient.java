@@ -3,17 +3,17 @@ package org.squidmin.bigquery.service;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.bigquery.*;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.squidmin.bigquery.config.BigQueryConfig;
+import org.squidmin.bigquery.config.DataTypes;
 import org.squidmin.bigquery.config.Schema;
+import org.squidmin.bigquery.logger.Logger;
 import org.squidmin.bigquery.util.BigQueryUtil;
 
 @Service
-@EnableConfigurationProperties(value = {Schema.class})
-@Slf4j
+@EnableConfigurationProperties(value = {Schema.class, DataTypes.class})
 public class BigQueryAdminClient {
 
     private String projectId, datasetName, tableName;
@@ -40,14 +40,18 @@ public class BigQueryAdminClient {
             BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
             Page<Dataset> datasets = bigquery.listDatasets(projectId, BigQuery.DatasetListOption.pageSize(100));
             if (datasets == null) {
-                log.info("Dataset does not contain any models.");
+                Logger.log("Dataset does not contain any models.", Logger.LogType.ERROR);
                 return;
             }
-            datasets.iterateAll()
-                .forEach(dataset -> log.info("Dataset ID: {}", dataset.getDatasetId()));
+            datasets.iterateAll().forEach(
+                dataset -> Logger.log(
+                    String.format("Dataset ID: %s", dataset.getDatasetId()),
+                    Logger.LogType.INFO
+                )
+            );
         } catch (BigQueryException e) {
-            log.info("Project does not contain any datasets.");
-            log.info(e.getMessage());
+            Logger.log("Project does not contain any datasets.", Logger.LogType.ERROR);
+            Logger.log(e.getMessage(), Logger.LogType.ERROR);
         }
     }
 
@@ -60,10 +64,13 @@ public class BigQueryAdminClient {
             DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetName).build();
             Dataset newDataset = bq.create(datasetInfo);
             String newDatasetName = newDataset.getDatasetId().getDataset();
-            log.info("Dataset " + newDatasetName + " created successfully.");
+            Logger.log(String.format("Dataset %s created successfully.", newDatasetName), Logger.LogType.INFO);
         } catch (BigQueryException e) {
-            log.info(e.getClass().getName() + ": Dataset \"" + datasetName + "\" was not created.");
-            log.info(e.getMessage());
+            Logger.log(
+                String.format("%s: Dataset \"%s\" was not created.", e.getClass().getName(), datasetName),
+                Logger.LogType.ERROR
+            );
+            Logger.log(e.getMessage(), Logger.LogType.ERROR);
             return false;
         }
         return true;
@@ -78,15 +85,15 @@ public class BigQueryAdminClient {
             TableId tableId = TableId.of(datasetName, tableName);
             TableDefinition tableDefinition = StandardTableDefinition.of(schema);
             TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
-            log.info("-".repeat(50));
-            log.info("Creating table \"" + tableInfo.getTableId() + "\". Find the table information below:");
-            BigQueryUtil.logTableInfo(tableInfo);
-            log.info("-".repeat(50));
+            Logger.logCreateTable(tableInfo);
             bq.create(tableInfo);
-            log.info("Table created successfully.");
+            Logger.log("Table created successfully.", Logger.LogType.INFO);
         } catch (BigQueryException e) {
-            log.info(e.getClass().getName() + ": Table \"" + tableName + "\" was not created.");
-            log.info(e.getMessage());
+            Logger.log(
+                String.format("%s: Table \"%s\" was not created.", e.getClass().getName(), tableName),
+                Logger.LogType.ERROR
+            );
+            Logger.log(e.getMessage(), Logger.LogType.ERROR);
             return false;
         }
         return true;

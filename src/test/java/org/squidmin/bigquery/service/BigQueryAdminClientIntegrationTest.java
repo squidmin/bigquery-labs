@@ -12,7 +12,7 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
 
     @Test
     public void echoDefaultBigQueryResourceMetadata() {
-        Logger.echoBigQueryResourceMetadata(bqResourceMetadata, Logger.EchoOption.DEFAULT);
+        Logger.echoBqResourceMetadata(bqResourceMetadata, Logger.ProfileOption.DEFAULT);
     }
 
     @Test
@@ -27,7 +27,7 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
 
     @Test
     public void createTableWithDefaultSchema() {
-        echoAppContextSummary();
+        Logger.echoBqResourceMetadata(bqResourceMetadata, Logger.ProfileOption.ACTIVE);
         Assertions.assertTrue(
             bigQueryAdminClient.createTable(DATASET_NAME, TABLE_NAME)
         );
@@ -35,7 +35,7 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
 
     @Test
     public void createTableWithCustomSchema() {
-        echoAppContextSummary();
+        Logger.echoBqResourceMetadata(bqResourceMetadata, Logger.ProfileOption.ACTIVE);
         Assertions.assertTrue(
             bigQueryAdminClient.createTable(
                 DATASET_NAME,
@@ -44,7 +44,5 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
             )
         );
     }
-
-
 
 }

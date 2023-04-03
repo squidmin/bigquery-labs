@@ -25,18 +25,23 @@ public class IntegrationTestConfig {
     @Autowired
     private Schema schema;
 
+    @Autowired
+    private DataTypes dataTypes;
+
     private BigQueryConfig bqConfig;
 
     @Bean
     public BigQueryConfig bigQueryConfig() {
-        bqConfig = new BigQueryConfig(projectId, datasetName, tableName, schema);
+        bqConfig = new BigQueryConfig(projectId, datasetName, tableName, schema, dataTypes);
         return bqConfig;
     }
 
     @Bean
-    public Schema schema() {
-        log.info("schema == {}", schema.getFields());
-        return schema;
+    public Schema schema() { return schema; }
+
+    @Bean
+    public DataTypes dataTypes() {
+        return dataTypes;
     }
 
     @Bean

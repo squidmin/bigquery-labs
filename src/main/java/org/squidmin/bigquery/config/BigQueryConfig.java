@@ -23,15 +23,19 @@ public class BigQueryConfig {
 
     private final BigQuery bigQuery;
 
+    private final DataTypes dataTypes;
+
     @Autowired
     public BigQueryConfig(@Value("${bigquery.projectId}") String projectId,
                           @Value("${bigquery.datasetName}") String datasetName,
                           @Value("${bigquery.tableName}") String tableName,
-                          Schema schema) {
+                          Schema schema,
+                          DataTypes dataTypes) {
         this.projectId = projectId;
         this.datasetName = datasetName;
         this.tableName = tableName;
         this.schema = schema;
+        this.dataTypes = dataTypes;
 
         bigQuery = BigQueryOptions.newBuilder().setLocation("us").build().getService();
     }

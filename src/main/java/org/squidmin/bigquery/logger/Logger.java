@@ -1,41 +1,75 @@
 package org.squidmin.bigquery.logger;
 
+import com.google.cloud.bigquery.TableInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.squidmin.bigquery.util.BigQueryResourceMetadata;
 
 @Slf4j
 public class Logger {
 
-    public static void echoActiveProfileId() {
-        log.info(LogFont.boldGreen(String.format("Active profile ID: %s", System.getProperty("profileId"))));
+    public static short HORIZONTAL_LINE_WIDTH = 50;
+
+    public enum LogType { INFO, DEBUG, ERROR, CYAN }
+    public static void log(String str, LogType logType) {
+        if (logType == LogType.INFO) {
+            str = LogFont.boldGreen(str);
+            log.info(str);
+        } else if (logType == LogType.DEBUG) {
+            str = LogFont.bold(str);
+            log.debug(str);
+        } else if (logType == LogType.ERROR) {
+            log.error(str);
+        } else if (logType == LogType.CYAN) {
+            str = LogFont.boldCyan(str);
+            log.info(str);
+        } else {
+            log.error("Error: Logger: Invalid LogType.");
+        }
     }
 
-    public static void echoBigQueryResourceMetadata(String projectId, String datasetName, String tableName) {
-        log.info(LogFont.boldGreen(String.format("Project ID: %s", projectId)));
-        log.info(LogFont.boldGreen(String.format("Dataset name: %s", datasetName)));
-        log.info(LogFont.boldGreen(String.format("Table name: %s", tableName)));
+    public static void logTableInfo(TableInfo tableInfo) {
+        log.info("Friendly name: " + tableInfo.getFriendlyName());
+        log.info("Description: " + tableInfo.getDescription());
+        log.info("Creation time: " + tableInfo.getCreationTime());
+        log.info("Expiration time: " + tableInfo.getExpirationTime());
     }
 
-    public enum EchoOption { DEFAULT, OVERRIDDEN, ACTIVE }
-    public static void echoBigQueryResourceMetadata(BigQueryResourceMetadata bqResourceMetadata, EchoOption echoOption) {
-        log.info(LogFont.boldGreen("-".repeat(50)));
-        if (echoOption == EchoOption.DEFAULT) {
-            log.info(LogFont.boldGreen("--- BigQuery metadata: Default values ---"));
-            Logger.echoBigQueryResourceMetadata(
+    public static void logCreateTable(TableInfo tableInfo) {
+        echoHorizontalLine(Logger.LogType.INFO);
+        log(
+            String.format("Creating table \"%s\". Find the table information below:", tableInfo.getTableId()),
+            Logger.LogType.INFO
+        );
+        logTableInfo(tableInfo);
+        echoHorizontalLine(Logger.LogType.INFO);
+    }
+
+    public static void echoBqResourceMetadata(String projectId, String datasetName, String tableName) {
+        log(String.format("Project ID: %s", projectId), LogType.INFO);
+        log(String.format("Dataset name: %s", datasetName), LogType.INFO);
+        log(String.format("Table name: %s", tableName), LogType.INFO);
+    }
+
+    public enum ProfileOption { DEFAULT, OVERRIDDEN, ACTIVE }
+    public static void echoBqResourceMetadata(BigQueryResourceMetadata bqResourceMetadata, ProfileOption profileOption) {
+        echoHorizontalLine(LogType.INFO);
+        if (profileOption == ProfileOption.DEFAULT) {
+            log("--- BigQuery default properties ---", LogType.CYAN);
+            echoBqResourceMetadata(
                 bqResourceMetadata.getProjectIdDefault(),
                 bqResourceMetadata.getDatasetNameDefault(),
                 bqResourceMetadata.getTableNameDefault()
             );
-        } else if (echoOption == EchoOption.OVERRIDDEN) {
-            log.info(LogFont.boldGreen("--- BigQuery metadata: Overridden values ---"));
-            Logger.echoBigQueryResourceMetadata(
+        } else if (profileOption == ProfileOption.OVERRIDDEN) {
+            log("--- BigQuery overridden properties ---", LogType.CYAN);
+            echoBqResourceMetadata(
                 bqResourceMetadata.getProjectIdOverride(),
                 bqResourceMetadata.getDatasetNameOverride(),
                 bqResourceMetadata.getTableNameOverride()
             );
-        } else if (echoOption == EchoOption.ACTIVE) {
-            log.info(LogFont.boldGreen("The following BigQuery resource properties are configured to be utilized:"));
-            Logger.echoBigQueryResourceMetadata(
+        } else if (profileOption == ProfileOption.ACTIVE) {
+            log("BigQuery resource properties currently configured:", LogType.CYAN);
+            echoBqResourceMetadata(
                 bqResourceMetadata.getProjectId(),
                 bqResourceMetadata.getDatasetName(),
                 bqResourceMetadata.getTableName()
@@ -43,7 +77,11 @@ public class Logger {
         } else {
             log.error("Error: IntegrationTest.echoBigQueryResourceMetadata(): Invalid option specified.");
         }
-        log.info(LogFont.boldGreen("-".repeat(50)));
+        echoHorizontalLine(LogType.INFO);
+    }
+
+    public static void echoHorizontalLine(LogType logType) {
+        log("-".repeat(HORIZONTAL_LINE_WIDTH), logType);
     }
 
 }

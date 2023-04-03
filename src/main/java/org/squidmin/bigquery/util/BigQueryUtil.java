@@ -2,6 +2,7 @@ package org.squidmin.bigquery.util;
 
 import com.google.cloud.bigquery.*;
 import lombok.extern.slf4j.Slf4j;
+import org.squidmin.bigquery.logger.Logger;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,15 +10,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class BigQueryUtil {
 
-    public static void logTableInfo(TableInfo tableInfo) {
-        log.info("Friendly name: " + tableInfo.getFriendlyName());
-        log.info("Description: " + tableInfo.getDescription());
-        log.info("Creation time: " + tableInfo.getCreationTime());
-        log.info("Expiration time: " + tableInfo.getExpirationTime());
-    }
-
     public static com.google.cloud.bigquery.Schema translate(org.squidmin.bigquery.config.Schema schema) {
-        log.info("Generating Schema object using: \"" + schema.getFields() + "\"...");
+        Logger.log(String.format("Generating Schema object using: \"%s\"...", schema.getFields()), Logger.LogType.CYAN);
         List<Field> fields = new ArrayList<>();
         schema.getFields().forEach(
             f -> {
@@ -30,15 +24,15 @@ public class BigQueryUtil {
                 );
             }
         );
-        log.info("Finished generating schema...");
+        Logger.log("Finished generating schema.", Logger.LogType.CYAN);
         return com.google.cloud.bigquery.Schema.of(fields);
     }
 
     public static com.google.cloud.bigquery.Schema translate(String schema) {
-        log.info("Generating Schema object using CLI arg: \"" + schema + "\"...");
+        Logger.log(String.format("Generating Schema object using CLI arg: \"%s\"...", schema), Logger.LogType.CYAN);
         List<Field> fields = new ArrayList<>();
         List<String> _fields = Arrays.stream(schema.split(";")).collect(Collectors.toList());
-        validateFields();
+//        validateFields(_fields); TODO
         _fields.forEach(
             f -> {
                 String[] split = f.split(",");
@@ -52,7 +46,7 @@ public class BigQueryUtil {
                 );
             }
         );
-        log.info("Finished generating schema...");
+        Logger.log("Finished generating schema.", Logger.LogType.CYAN);
         return com.google.cloud.bigquery.Schema.of(fields);
     }
 
@@ -64,12 +58,12 @@ public class BigQueryUtil {
         } else if (type.equalsIgnoreCase("bool")) {
             return StandardSQLTypeName.BOOL;
         } else {
-            log.error("Error: BigQueryConfig.translateType(): Data type not supported. Defaulting to 'StandardSQLTypeNames.STRING'.");
+            Logger.log("Error: BigQueryConfig.translateType(): Data type not supported. Defaulting to 'StandardSQLTypeNames.STRING'.", Logger.LogType.ERROR);
             return StandardSQLTypeName.STRING;
         }
     }
 
-    private static boolean validateFields() {
+    private static boolean validateFields(List<String> fields) {
         // TODO
         return false;
     }

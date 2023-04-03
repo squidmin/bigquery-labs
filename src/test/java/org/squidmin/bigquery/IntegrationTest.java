@@ -35,34 +35,40 @@ public abstract class IntegrationTest {
     protected org.squidmin.bigquery.config.Schema schemaDefault;
     protected com.google.cloud.bigquery.Schema _schemaOverride;
 
-    // The default values of these fields can be overridden by the values of CLI arguments.
+    // The default values of configured BigQuery resource properties can be overridden by the values of CLI arguments.
     protected String PROJECT_ID, DATASET_NAME, TABLE_NAME;
     protected com.google.cloud.bigquery.Schema SCHEMA;
 
-    protected BigQueryResourceMetadata bqResourceMetadata = null;
+    protected BigQueryResourceMetadata bqResourceMetadata = BigQueryResourceMetadata.builder().build();
 
     @Before
     public void before() {
         initialize();
         bigQueryAdminClient = new BigQueryAdminClient(bqConfig);
-        Logger.echoActiveProfileId();
+        Logger.log(String.format("Active profile ID: %s", System.getProperty("profileId")), Logger.LogType.CYAN);
     }
 
     private void initialize() {
-        initializeBqResourcePropertyDefaultValues();
-        initializeBqResourcePropertyOverriddenValues();
-        initializeBqResourcePropertyMetadata();
-        initializeBqResourceActiveProperties();
+        initBqResourcePropertyDefaultValues();
+        initBqResourcePropertyOverriddenValues();
+        initBqResourcePropertyMetadata();
+        initBqResourceActiveProperties();
     }
 
-    private void initializeBqResourcePropertyDefaultValues() {
+    private void initBqResourcePropertyDefaultValues() {
         projectIdDefault = bqConfig.getProjectId();
         datasetNameDefault = bqConfig.getDatasetName();
         tableNameDefault = bqConfig.getTableName();
         schemaDefault = bqConfig.getSchema();
+        bqResourceMetadata = BigQueryResourceMetadata.builder()
+            .projectIdDefault(bqConfig.getProjectId())
+            .datasetNameDefault(bqConfig.getDatasetName())
+            .tableNameDefault(bqConfig.getTableName())
+            .schema(BigQueryUtil.translate(bqConfig.getSchema()))
+            .build();
     }
 
-    private void initializeBqResourcePropertyOverriddenValues() {
+    private void initBqResourcePropertyOverriddenValues() {
         projectIdOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.projectId.name());
         datasetNameOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.datasetName.name());
         tableNameOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.tableName.name());
@@ -70,16 +76,14 @@ public abstract class IntegrationTest {
         if (null != schemaOverride) { _schemaOverride = BigQueryUtil.translate(schemaOverride); }
     }
 
-    private void initializeBqResourcePropertyMetadata() {
-        bqResourceMetadata = BigQueryResourceMetadata.builder()
-            .projectId(setBqResourceProperty(projectIdDefault, projectIdOverride))
-            .datasetName(setBqResourceProperty(datasetNameDefault, datasetNameOverride))
-            .tableName(setBqResourceProperty(tableNameDefault, tableNameOverride))
-            .schema(null != schemaOverride ? _schemaOverride : BigQueryUtil.translate(schemaDefault))
-            .build();
+    private void initBqResourcePropertyMetadata() {
+        bqResourceMetadata.setProjectId(setBqResourceProperty(projectIdDefault, projectIdOverride));
+        bqResourceMetadata.setDatasetName(setBqResourceProperty(datasetNameDefault, datasetNameOverride));
+        bqResourceMetadata.setTableName(setBqResourceProperty(tableNameDefault, tableNameOverride));
+        bqResourceMetadata.setSchema(null != schemaOverride ? _schemaOverride : BigQueryUtil.translate(schemaDefault));
     }
 
-    private void initializeBqResourceActiveProperties() {
+    private void initBqResourceActiveProperties() {
         PROJECT_ID = bqResourceMetadata.getProjectId();
         DATASET_NAME = bqResourceMetadata.getDatasetName();
         TABLE_NAME = bqResourceMetadata.getTableName();
@@ -88,10 +92,6 @@ public abstract class IntegrationTest {
 
     private String setBqResourceProperty(String defaultValue, String overrideValue) {
         return null != overrideValue ? overrideValue : defaultValue;
-    }
-
-    protected void echoAppContextSummary() {
-        Logger.echoBigQueryResourceMetadata(bqResourceMetadata, Logger.EchoOption.ACTIVE);
     }
 
 }

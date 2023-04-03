@@ -3,20 +3,22 @@ FROM eclipse-temurin:11-jdk-alpine
 # CLI arguments.
 ARG GCP_PROJECT_ID
 
-# OS environment variables.
+### Environment variables ###
+# OS
 ENV APP_DIR=/usr/local/app
-# gcloud CLI environment variables.
+# gcloud CLI
 ENV GCLOUD_CLI_BASE_URL=https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/
 ENV GCLOUD_CLI_TARGET=google-cloud-cli-387.0.0-linux-x86_64
 ENV GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/sa-private-key.json
 ENV GCLOUD=/usr/local/google-cloud-sdk/bin/gcloud
-# Maven environment variables.
+# Maven
 ENV MAVEN_ARCHIVE=apache-maven-3.9.1-bin.tar.gz
 ENV M2_HOME=/usr/local/apache-maven/apache-maven-3.9.1
 ENV M2=$M2_HOME/bin
 ENV MAVEN_OPTS="-Xms256m -Xmx512m"
-# Python environment variables.
+# Python
 ENV PYTHONUNBUFFERED=1
+###
 
 # Install Python 3 and pip. (Required for gcloud SDK.)
 RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python

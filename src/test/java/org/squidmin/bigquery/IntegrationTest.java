@@ -14,7 +14,6 @@ import org.squidmin.bigquery.service.BigQueryAdminClient;
 import org.squidmin.bigquery.util.BigQueryResourceMetadata;
 import org.squidmin.bigquery.util.BigQueryUtil;
 import org.squidmin.bigquery.logger.Logger;
-import org.squidmin.bigquery.util.TableFactory;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { BigQueryAdminClient.class, IntegrationTestConfig.class })
@@ -24,9 +23,6 @@ public abstract class IntegrationTest {
 
     @Autowired
     protected BigQueryConfig bqConfig;
-
-    @Autowired
-    protected TableFactory tableFactory;
 
     protected BigQueryAdminClient bigQueryAdminClient;
 

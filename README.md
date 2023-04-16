@@ -276,7 +276,7 @@ Example:
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#listDatasets \
   test -P integration \
-  -DprojectId="lofty-root-378503"
+  -DprojectId=lofty-root-378503
 ```
 
 </details>
@@ -369,9 +369,31 @@ Example using the `integration` profile:
   -Dtest=BigQueryAdminClientIntegrationTest#createTableWithCustomSchema \
   test -P integration \
   -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_123" \
-  -DtableName="test_table_321" \
+  -DdatasetName="test_dataset_name_integration" \
+  -DtableName="test_table_name_integration" \
   -Dschema="id,string;client_name,string;active,bool;creation_timestamp,datetime;last_update_timestamp,datetime"
+```
+
+---
+
+### `bq` CLI
+
+```shell
+bq mk --table project_id:dataset.table schema
+```
+
+**Replace the following**:
+- `project_id`: the name of the GCP project to target.
+- `dataset`: the name of the BigQuery dataset to target.
+- `table`: the name of the BigQuery table to target.
+- `schema`: an inline schema definition.
+
+Example:
+
+```shell
+bq mk --table \
+  lofty-root-378503.test_dataset_name_integration.test_table_name_integration \
+  id:STRING,fieldA:STRING,fieldB:STRING,fieldC:STRING,fieldD:STRING
 ```
 
 </details>

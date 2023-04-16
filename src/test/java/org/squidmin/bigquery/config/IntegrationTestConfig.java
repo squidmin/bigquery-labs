@@ -44,9 +44,4 @@ public class IntegrationTestConfig {
         return dataTypes;
     }
 
-    @Bean
-    public TableFactory tableFactory() {
-        return new TableFactory(bqConfig);
-    }
-
 }

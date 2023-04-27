@@ -10,7 +10,7 @@ Made with:
 ---
 
 
-### Quickstart
+## Install & build
 
 <details>
 <summary>Download, install, and initialize the gcloud SDK on your local machine</summary>
@@ -23,6 +23,27 @@ When it's finished installing, add the `gcloud` executable to your system's `$PA
 
 ```shell
 gcloud init
+```
+
+</details>
+
+
+<details>
+<summary>Echo a GCP service account access token</summary>
+
+Run this command to assign a GCP access token to an environment variable on your system:
+
+```shell
+export GOOGLE_APPLICATION_CREDENTIALS=$(gcloud auth print-access-token --impersonate-service-account='SA_EMAIL_ADDRESS')
+```
+
+**Replace the following**:
+- `SA_EMAIL_ADDRESS`: the email address of the service account to impersonate.
+
+Example:
+
+```shell
+export GOOGLE_APPLICATION_CREDENTIALS=$(gcloud auth print-access-token --impersonate-service-account='9644524330-compute@developer.gserviceaccount.com')
 ```
 
 </details>
@@ -81,22 +102,47 @@ Read <a href="https://maven.apache.org/install.html">here</a> for more informati
 
 
 <details>
-<summary>Build the container image</summary>
+<summary>Build a JAR</summary>
 
 ```shell
-docker build -t bigquery-labs .
+mvn clean package
 ```
 
 </details>
 
 
 <details>
-<summary>Start a container instance</summary>
+<summary>Add manifest file</summary>
+
+```shell
+jar -cmvf \
+  ./build/tmp/jar/MANIFEST.MF \
+  ./build/libs/spring-rest-labs-0.0.1-SNAPSHOT.jar \
+  ./build/classes/java/main/org/squidmin/spring/rest/springrestlabs/SpringRestLabsApplication.class
+```
+
+</details>
+
+
+<details>
+<summary>Build a container image</summary>
+
+```shell
+docker build \
+  --build-arg GCP_PROJECT_ID=PROJECT_ID \
+  -t bigquery-labs .
+```
+
+</details>
+
+
+<details>
+<summary>Run an interactive container instance</summary>
 
 ```shell
 docker run \
   --rm -it \
-  -e GCP_PROJECT_ID=PROJECT_ID \
+  -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
   -v $HOME/.config/gcloud:/root/.config/gcloud \
   -v $HOME/.m2:/root/.m2 \
   bigquery-labs
@@ -104,13 +150,14 @@ docker run \
 
 **Replace the following**:
 - `PROJECT_ID`: the project ID for the target GCP project.
+- `GOOGLE_APPLICATION_CREDENTIALS`: GCP access token for service account impersonation. 
 
-Example with `lofty-root-305785` as the `GCP_PROJECT_ID`:
+Example:
 
 ```shell
 docker run \
   --rm -it \
-  -e GCP_PROJECT_ID=lofty-root-305785 \
+  -e GOOGLE_APPLICATION_CREDENTIALS=lofty-root-305785 \
   -v $HOME/.config/gcloud:/root/.config/gcloud \
   -v $HOME/.m2:/root/.m2 \
   bigquery-labs
@@ -122,161 +169,29 @@ docker run \
 ---
 
 
-### `gcloud` usage in instances of the container
+## Table admin
 
-<details>
-<summary>Using the gcloud executable</summary>
-
-<blockquote>
-<strong><i>Note</i></strong>: In the container image, the absolute path of the <code>gcloud</code> executable is assigned to the <code>$GCLOUD</code> environment variable.
-<br/>
-The below example demonstrates how to use this environment variable to execute <code>gcloud</code> commands:
-<br/><br/>
-<code>$GCLOUD auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}</code>
-<br/><br/>
-Instead of typing the absolute path, as in
-<br/><br/>
-<code>/usr/local/google-cloud-sdk/bin/gcloud</code>
-<br/><br/>
-run <code>gcloud</code> commands using this environment variable.
-</blockquote>
-
-</details>
-
-
-<details>
-<summary>Activate GCP service account</summary>
-
-The container image stores the user's service account key in the `GOOGLE_APPLICATION_CREDENTIALS` environment variable, so the user can activate their service account using the below command:
-
-```shell
-$GCLOUD auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
-```
-
-</details>
-
-
-<details>
-<summary>Set the active GCP project</summary>
-
-```shell
-$GCLOUD config set project ${GCP_PROJECT_ID}
-```
-
-`GCP_PROJECT_ID` is the same project ID passed via the `docker run` command when starting the container.
-
-</details>
-
-
-<details>
-<summary>List available gcloud SDK components</summary>
-
-```shell
-$GCLOUD components list
-```
-
-</details>
-
-
-<details>
-<summary>Update gcloud SDK components</summary>
-
-```shell
-$GCLOUD components update
-```
-
-</details>
-
-
-<details>
-<summary>Application Default Credentials (ADC) usage</summary>
-
-In an interactive container instance, run the following commands:
-
-```shell
-$GCLOUD auth login
-$GCLOUD auth application-default login
-```
-
-</details>
-
-
----
-
-
-### Table admin
-
-<details>
-<summary>List BigQuery resource metadata configured for a particular Spring profile</summary>
-
-```shell
-./mvnw \
-  -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
-  test -P PROFILE_NAME \
-  -DprojectId="PROJECT_ID"
-```
-
-**Replace the following**:
-- `PROFILE_NAME`: the name of the profile to activate for the method execution.
-- `PROJECT_ID`: the project ID for the GCP project to target.
-
-For example, assuming the name of the profile to activate is `integration`:
-
-```shell
-./mvnw \
-  -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
-  test -P integration \
-  -DprojectId="lofty-root-378503"
-```
-
-The `-DargLine` parameter can also indicate the profile to activate.
-
-```shell
-./mvnw \
-  -DargLine="-Dspring.profiles.active=PROFILE_NAME" \
-  -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
-  test \
-  -DprojectId="PROJECT_ID"
-```
-
-**Replace the following**:
-- `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID of the GCP project to target.
-
-For example, assuming the name of the profile to activate is `integration`:
-
-```shell
-./mvnw \
-  -DargLine="-Dspring.profiles.active=integration" \
-  -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
-  test \
-  -DprojectId="lofty-root-378503"
-```
-
-</details>
-
+### `bq` CLI
 
 <details>
 <summary>List datasets</summary>
 
 ```shell
-./mvnw \
-  -Dtest=BigQueryAdminClientIntegrationTest#listDatasets \
-  test -P PROFILE_NAME \
-  -projectId="PROJECT_ID"
+bq ls --filter labels.key:value \
+  --max_results integer \
+  --format=prettyjson \
+  --project_id project_id
 ```
 
 **Replace the following**:
-- `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID of the GCP project to target.
+- `key:value`: a label key and value, if applicable.
+- `integer`: an integer representing the number of datasets to list.
+- `project_id`: the name of the GCP project to target.
 
-Example:
+**Examples**:
 
 ```shell
-./mvnw \
-  -Dtest=BigQueryAdminClientIntegrationTest#listDatasets \
-  test -P integration \
-  -DprojectId=lofty-root-378503
+bq ls --format=pretty
 ```
 
 </details>
@@ -285,98 +200,58 @@ Example:
 <details>
 <summary>Create a dataset</summary>
 
+Refer to the <a href="https://cloud.google.com/bigquery/docs/datasets#create-dataset">GCP documentation for creating datasets</a>.
+
+**Examples**:
+
 ```shell
-./mvnw \
-  -Dtest=BigQueryAdminClientIntegrationTest#createDataset \
-  test -P PROFILE_NAME \
-  -DprojectId="PROJECT_ID" \
-  -DdatasetName="DATASET_NAME"
+bq --location=us mk \
+  --dataset \
+  --default_partition_expiration=3600 \
+  --default_table_expiration=3600 \
+  --description="An example." \
+  --label=test_label_1:test_value_1 \
+  --label=test_label_2:test_value_2 \
+  --max_time_travel_hours=168 \
+  --storage_billing_model=LOGICAL \
+  lofty-root-378503:test_dataset_name_lofty
 ```
 
-**Replace the following**:
-- `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID of the GCP project to target.
-- `DATASET_NAME`: the name of the dataset to target.
-
-Example:
+The Cloud Key Management Service (KMS) key parameter (`KMS_KEY_NAME`) can be specified.
+This parameter is used to pass the name of the default Cloud Key Management Service key used to protect newly created tables in this dataset.
+You cannot create a Google-encrypted table in a dataset with this parameter set.
 
 ```shell
-./mvnw \
-  -Dtest=BigQueryAdminClientIntegrationTest#createDataset \
-  test -P integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_123"
-```
-
-</details>
-
-
-<details>
-<summary>Create a table with the configured default schema</summary>
-
-```shell
-./mvnw \
-  -Dtest=BigQueryAdminClientIntegrationTest#createTableWithDefaultSchema \
-  test -P PROFILE_NAME \
-  -DprojectId="PROJECT_ID" \
-  -DdatasetName="DATASET_NAME" \
-  -DtableName="TABLE_NAME"
-```
-
-**Replace the following**:
-- `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID of the GCP project to target.
-- `DATASET_NAME`: the name of the BigQuery dataset to target.
-- `TABLE_NAME`: the name of the BigQuery table to target.
-
-Example using the `integration` profile:
-
-```shell
-./mvnw \
-  -Dtest=BigQueryAdminClientIntegrationTest#createTableWithDefaultSchema \
-  test -P integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_123" \
-  -DtableName="test_table_123"
+bq --location=us mk \
+  --dataset \
+  --default_kms_key=KMS_KEY_NAME \
+  ...
+  lofty-root-378503:test_dataset_name_lofty
 ```
 
 </details>
 
 
 <details>
-<summary>Create a table with a custom schema</summary>
+<summary>Delete a dataset</summary>
+
+Refer to the <a href="https://cloud.google.com/bigquery/docs/managing-datasets#delete_a_dataset">GCP documentation for deleting a dataset</a>.
+
+#### Examples:
+
+Remove all tables in the dataset (`-r` flag):
 
 ```shell
-./mvnw \
-  -Dtest=BigQueryAdminClientIntegrationTest#createTableWithCustomSchema \
-  test -P PROFILE_NAME \
-  -DprojectId="PROJECT_ID" \
-  -DdatasetName="DATASET_NAME" \
-  -DtableName="TABLE_NAME" \
-  -Dschema="name_1,datatype_1;name_2,datatype_2;[...];name_n,datatype_n"
+bq rm -r -f -d lofty-root-378503:test_dataset_name_lofty
 ```
 
-**Replace the following**:
-- `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the name of the GCP project ID to target.
-- `DATASET_NAME`: the name of the BigQuery dataset to target.
-- `TABLE_NAME`: the name of the BigQuery table to target.
+</details>
 
-Example using the `integration` profile:
 
-```shell
-./mvnw \
-  -Dtest=BigQueryAdminClientIntegrationTest#createTableWithCustomSchema \
-  test -P integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_name_integration" \
-  -DtableName="test_table_name_integration" \
-  -Dschema="id,string;client_name,string;active,bool;creation_timestamp,datetime;last_update_timestamp,datetime"
-```
+<details>
+<summary>Create a table with a configured schema</summary>
 
----
-
-### `bq` CLI
+**Create an empty table with an inline schema definition**
 
 ```shell
 bq mk --table project_id:dataset.table schema
@@ -392,8 +267,148 @@ Example:
 
 ```shell
 bq mk --table \
-  lofty-root-378503.test_dataset_name_integration.test_table_name_integration \
+  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
   id:STRING,fieldA:STRING,fieldB:STRING,fieldC:STRING,fieldD:STRING
+```
+
+### Specify the schema in a JSON schema file
+
+For an example JSON schema file, refer to: `/schema/example.json`.
+
+**Create an empty table**
+
+```shell
+bq mk --table \
+  project_id:dataset.table \
+  path_to_schema_file
+```
+
+Example:
+
+```shell
+bq mk --table \
+  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
+  ./schema/example.json
+```
+
+**Create a table with CSV data**
+
+```shell
+bq --location=location load \
+  --source_format=format \
+  project_id:dataset.table \
+  path_to_data_file \
+  path_to_schema_file
+```
+
+Example:
+
+```shell
+bq --location=us load \
+  --source_format=CSV \
+  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
+  ./csv/example.csv \
+  ./schema/example.json
+```
+
+Refer to the BigQuery documentation: <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#details_of_loading_csv_data">Details of loading CSV data</a>.
+
+</details>
+
+
+<details>
+<summary>Delete a table</summary>
+
+```shell
+bq rm --table test_dataset_name_lofty.test_table_name_lofty
+```
+
+</details>
+
+
+<details>
+<summary>Show table schema</summary>
+
+Example:
+
+```shell
+bq show \
+  --schema \
+  --format=prettyjson \
+  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty
+```
+
+The table schema can be written to a file:
+
+```shell
+bq show \
+  --schema \
+  --format=prettyjson \
+  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \ > ./schema/example_show-write.json
+```
+
+</details>
+
+
+<details>
+<summary>Modify table schemas</summary>
+
+```shell
+bq update \
+  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
+  ./schema/example_update.json
+```
+
+Refer to the <a href="https://cloud.google.com/bigquery/docs/managing-table-schemas">GCP documentation on modifying table schemas.</a>.
+
+</details>
+
+
+<details>
+<summary>Insert data into a table</summary>
+
+**Examples**:
+
+Insert for known values:
+
+```shell
+bq insert test_dataset_name_lofty.test_table_name_lofty ./json/example.json
+```
+
+Specify a template suffix (`--template_suffix` or `-x`):
+
+```shell
+bq insert --ignore_unknown_values \
+  --template_suffix=_insert \
+  test_dataset_name_lofty.test_table_name_lofty \
+  ./json/example.json
+```
+
+Refer to the <a href="">`bq insert` documentation</a>.
+
+</details>
+
+
+<details>
+<summary>Run an interactive query</summary>
+
+```shell
+bq query \
+  --use_legacy_sql=false \
+  'query_string'
+```
+
+Example:
+
+```shell
+bq query \
+  --use_legacy_sql=false \
+  'SELECT
+    id, fieldC
+  FROM
+    `lofty-root-378503.test_dataset_name_lofty.test_table_name_lofty`
+  LIMIT
+    3;'
 ```
 
 </details>
@@ -402,13 +417,14 @@ bq mk --table \
 ---
 
 
-### Run the jar
+## Run the application
 
 <details>
 <summary>Specify no profile</summary>
 
 ```shell
-mvn spring-boot:run
+mvn spring-boot:run \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$DGOOGLE_APPLICATION_CREDENTIALS
 ```
 
 </details>
@@ -418,7 +434,9 @@ mvn spring-boot:run
 <summary>Specify a profile</summary>
 
 ```shell
-mvn spring-boot:run -Dspring-boot.run.profiles=local
+mvn spring-boot:run \
+  -Dspring-boot.run.profiles=local \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$DGOOGLE_APPLICATION_CREDENTIALS
 ```
 
 </details>

@@ -5,6 +5,7 @@ GCP BigQuery labs using the Java SDK.
 Made with:
 - **IntelliJ IDEA 2023.1 (Ultimate Edition)**
 - **openjdk 11.0.17**
+- **Apache Maven 3.8.7**
 
 
 ---

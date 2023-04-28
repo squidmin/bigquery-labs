@@ -3,7 +3,7 @@
 GCP BigQuery labs using the Java SDK.
 
 Made with:
-- **IntelliJ IDEA 2022.2 (Community Edition)**
+- **IntelliJ IDEA 2023.1 (Ultimate Edition)**
 - **openjdk 11.0.17**
 
 
@@ -161,6 +161,53 @@ docker run \
   -v $HOME/.config/gcloud:/root/.config/gcloud \
   -v $HOME/.m2:/root/.m2 \
   bigquery-labs
+```
+
+</details>
+
+
+---
+
+
+## Run the application
+
+### 1. Run an interactive container instance
+
+<details>
+<summary>Expand</summary>
+
+```shell
+docker run \
+  --rm -it \
+  -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -v $HOME/.config/gcloud:/root/.config/gcloud \
+  -v $HOME/.m2:/root/.m2 \
+  bigquery-labs
+```
+
+</details>
+
+### 2. Run the JAR
+
+<details>
+<summary>Using "exec java" command. Specify a profile.</summary>
+
+```shell
+exec java -jar \
+  -Dspring.profiles.active=local \
+  ./target/bigquery-labs-0.0.1-SNAPSHOT.jar
+```
+
+</details>
+
+
+<details>
+<summary>With Maven. Specify a profile.</summary>
+
+```shell
+mvn spring-boot:run \
+  -Dspring-boot.run.profiles=local \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$DGOOGLE_APPLICATION_CREDENTIALS
 ```
 
 </details>
@@ -409,34 +456,6 @@ bq query \
     `lofty-root-378503.test_dataset_name_lofty.test_table_name_lofty`
   LIMIT
     3;'
-```
-
-</details>
-
-
----
-
-
-## Run the application
-
-<details>
-<summary>Specify no profile</summary>
-
-```shell
-mvn spring-boot:run \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$DGOOGLE_APPLICATION_CREDENTIALS
-```
-
-</details>
-
-
-<details>
-<summary>Specify a profile</summary>
-
-```shell
-mvn spring-boot:run \
-  -Dspring-boot.run.profiles=local \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$DGOOGLE_APPLICATION_CREDENTIALS
 ```
 
 </details>

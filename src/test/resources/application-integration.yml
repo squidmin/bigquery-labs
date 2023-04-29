@@ -1,7 +1,12 @@
 bigquery:
-  projectId: project-name_integration
-  datasetName: test_dataset_name_integration
-  tableName: test_table_name_integration
+  application-default:
+    project-id: lofty-root-378503
+    dataset: test_dataset_name_integration
+    table: test_table_name_integration
+  service-account:
+    project-id: ${bigquery.application-default.project-id}
+    dataset: ${bigquery.application-default.dataset}
+    table: ${bigquery.application-default.table}
   schema:
     fields:
       - name: id

@@ -30,9 +30,21 @@ gcloud init
 
 
 <details>
-<summary>Echo a GCP service account access token</summary>
+<summary>gcloud CLI: Generate an Application Default Credentials (ADC) access token</summary>
 
-Run this command to assign a GCP access token to an environment variable on your system:
+If you're running the application locally, you can use the following command to generate an access token:
+
+```shell
+export GOOGLE_APPLICATION_CREDENTIALS="$(gcloud auth application-default print-access-token)"
+```
+
+</details>
+
+
+<details>
+<summary>gcloud CLI: Generate a GCP service account access token</summary>
+
+Run this command to generate an access token for a specific GCP service account:
 
 ```shell
 export GOOGLE_APPLICATION_CREDENTIALS=$(gcloud auth print-access-token --impersonate-service-account='SA_EMAIL_ADDRESS')
@@ -53,35 +65,40 @@ export GOOGLE_APPLICATION_CREDENTIALS=$(gcloud auth print-access-token --imperso
 <details>
 <summary>Create and store a service account key</summary>
 
-The `Dockerfile` of this project will map the directory:
+This section refers to usage of a GCP service account key (.json) file stored on your local file system.
 
-`/Users/USERNAME/.config/gcloud`
-
-to a volume on the container instance: 
-
-`/root/.config/gcloud`
-
-so that the **_service account key_** and **_application default credentials_** used locally are also available for the container instance.
-
-Read <a href="https://cloud.google.com/iam/docs/keys-create-delete#iam-service-account-keys-create-gcloud">here</a> for more information about creating service account keys.
+To map a local `gcloud` installation to a volume on a container instance running the application, include the `-v` parameter in the `docker run` command used to start a container instance, as described below. 
 
 ### macOS
 
-Store the service account key at the location:
+Assuming the user's service account key file is stored in the same directory as their local `gcloud` installation:
 
 `/Users/USERNAME/.config/gcloud`
+
+and the target volume on the container instance is: 
+
+`/root/.config/gcloud`
+
+the command to run the container instance would be:
+
+```shell
+docker run \
+  --rm -it \
+  -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -v $HOME/.config/gcloud:/root/.config/gcloud \
+  -v $HOME/.m2:/root/.m2 \
+  biquery-labs
+```
 
 **Replace the following**:
 
 - `USERNAME`: the current user's username
 
-e.g.,
+so that the path to the service account key file is correct, e.g.:
 
 `/Users/squidmin/.config/gcloud/sa-private-key.json`
 
-### Windows
-
-TBD
+Read <a href="https://cloud.google.com/iam/docs/keys-create-delete#iam-service-account-keys-create-gcloud">here</a> for more information about creating service account keys.
 
 </details>
 
@@ -113,55 +130,12 @@ mvn clean package
 
 
 <details>
-<summary>Add manifest file</summary>
-
-```shell
-jar -cmvf \
-  ./build/tmp/jar/MANIFEST.MF \
-  ./build/libs/spring-rest-labs-0.0.1-SNAPSHOT.jar \
-  ./build/classes/java/main/org/squidmin/spring/rest/springrestlabs/SpringRestLabsApplication.class
-```
-
-</details>
-
-
-<details>
 <summary>Build a container image</summary>
 
 ```shell
 docker build \
   --build-arg GCP_PROJECT_ID=PROJECT_ID \
   -t bigquery-labs .
-```
-
-</details>
-
-
-<details>
-<summary>Run an interactive container instance</summary>
-
-```shell
-docker run \
-  --rm -it \
-  -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
-  -v $HOME/.config/gcloud:/root/.config/gcloud \
-  -v $HOME/.m2:/root/.m2 \
-  bigquery-labs
-```
-
-**Replace the following**:
-- `PROJECT_ID`: the project ID for the target GCP project.
-- `GOOGLE_APPLICATION_CREDENTIALS`: GCP access token for service account impersonation. 
-
-Example:
-
-```shell
-docker run \
-  --rm -it \
-  -e GOOGLE_APPLICATION_CREDENTIALS=lofty-root-305785 \
-  -v $HOME/.config/gcloud:/root/.config/gcloud \
-  -v $HOME/.m2:/root/.m2 \
-  bigquery-labs
 ```
 
 </details>
@@ -177,10 +151,26 @@ docker run \
 <details>
 <summary>Expand</summary>
 
+The `GOOGLE_APPLICATION_CREDENTIALS` environment variable is used to store the path to the user's service account key file.
+The user's service account key file is mapped to the `/root/.config/gcloud` directory on the container instance.
+
+```shell
+export GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/sa-private-key.json
+```
+
+The `GCP_ACCESS_TOKEN` environment variable is used to store an OAuth2 access token for reaching BigQuery RESTful services.
+
+```shell
+export GCP_ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
+```
+
+Run command:
+
 ```shell
 docker run \
   --rm -it \
-  -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -e GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/sa-private-key.json \
+  -e GCP_ACCESS_TOKEN=$(gcloud auth application-default print-access-token) \
   -v $HOME/.config/gcloud:/root/.config/gcloud \
   -v $HOME/.m2:/root/.m2 \
   bigquery-labs
@@ -189,6 +179,12 @@ docker run \
 </details>
 
 ### 2. Run the JAR
+
+> Note: This section is for testing the main application entrypoint only.
+>
+> This project currently invokes the BigQuery Java SDK (and later the BigQuery RESTful services) via the `mvn test` interface. Use that for now.
+> 
+> Refer to: <a href="export GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/sa-private-key.json">`/tests` README.md</a>.
 
 <details>
 <summary>Using "exec java" command. Specify a profile.</summary>

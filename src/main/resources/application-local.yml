@@ -1,7 +1,12 @@
 bigquery:
-  projectId: project-name_local
-  datasetName: test_dataset_name_local
-  tableName: test_table_name_local
+  application-default:
+    project-id: project-name_local
+    dataset: test_dataset_name_local
+    table: test_table_name_local
+  service-account:
+    project-id: ${bigquery.application-default.project-id}
+    dataset: ${bigquery.application-default.dataset}
+    table: ${bigquery.application-default.table}
   schema:
     fields:
       - name: id

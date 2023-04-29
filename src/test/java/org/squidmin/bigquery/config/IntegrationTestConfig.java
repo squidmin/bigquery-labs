@@ -7,19 +7,30 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import java.io.IOException;
+
 @Configuration
 @Profile("integration")
 @Slf4j
 public class IntegrationTestConfig {
 
-    @Value("${bigquery.projectId}")
-    private String projectId;
+    @Value("${bigquery.application-default.project-id}")
+    private String defaultProjectId;
 
-    @Value("${bigquery.datasetName}")
-    private String datasetName;
+    @Value("${bigquery.application-default.dataset}")
+    private String defaultDataset;
 
-    @Value("${bigquery.tableName}")
-    private String tableName;
+    @Value("${bigquery.application-default.table}")
+    private String defaultTable;
+
+    @Value("${bigquery.service-account.project-id}")
+    private String saProjectId;
+
+    @Value("${bigquery.service-account.dataset}")
+    private String saDataset;
+
+    @Value("${bigquery.service-account.table}")
+    private String saTable;
 
     @Autowired
     private Schema schema;
@@ -30,10 +41,22 @@ public class IntegrationTestConfig {
     private BigQueryConfig bqConfig;
 
     @Bean
-    public BigQueryConfig bigQueryConfig() {
-        bqConfig = new BigQueryConfig(projectId, datasetName, tableName, schema, dataTypes);
-        return bqConfig;
-    }
+    public String defaultProjectId() { return defaultProjectId; }
+
+    @Bean
+    public String defaultDataset() { return defaultDataset; }
+
+    @Bean
+    public String defaultTable() { return defaultTable; }
+
+    @Bean
+    public String saProjectId() { return saProjectId; }
+
+    @Bean
+    public String saDataset() { return saDataset; }
+
+    @Bean
+    public String saTable() { return saTable; }
 
     @Bean
     public Schema schema() { return schema; }
@@ -41,6 +64,21 @@ public class IntegrationTestConfig {
     @Bean
     public DataTypes dataTypes() {
         return dataTypes;
+    }
+
+    @Bean
+    public BigQueryConfig bigQueryConfig() throws IOException {
+        bqConfig = new BigQueryConfig(
+            defaultProjectId,
+            defaultDataset,
+            defaultTable,
+            saProjectId,
+            saDataset,
+            saTable,
+            schema,
+            dataTypes
+        );
+        return bqConfig;
     }
 
 }

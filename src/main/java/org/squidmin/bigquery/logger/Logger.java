@@ -2,7 +2,7 @@ package org.squidmin.bigquery.logger;
 
 import com.google.cloud.bigquery.TableInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.squidmin.bigquery.util.BigQueryResourceMetadata;
+import org.squidmin.bigquery.util.RunEnvironment;
 
 @Slf4j
 public class Logger {
@@ -44,35 +44,52 @@ public class Logger {
         echoHorizontalLine(Logger.LogType.INFO);
     }
 
-    public static void echoBqResourceMetadata(String projectId, String datasetName, String tableName) {
-        log(String.format("Project ID: %s", projectId), LogType.INFO);
-        log(String.format("Dataset name: %s", datasetName), LogType.INFO);
-        log(String.format("Table name: %s", tableName), LogType.INFO);
+    public static void echoRunEnvironment(
+        String defaultProjectId, String defaultDataset, String defaultTable,
+        String saProjectId, String saDataset, String saTable) {
+
+        log(String.format("Default Project ID: %s", defaultProjectId), LogType.INFO);
+        log(String.format("Default Dataset name: %s", defaultDataset), LogType.INFO);
+        log(String.format("Default Table name: %s", defaultTable), LogType.INFO);
+
+        log(String.format("Service account Project ID: %s", saProjectId), LogType.INFO);
+        log(String.format("Service account Dataset name: %s", saDataset), LogType.INFO);
+        log(String.format("Service account Table name: %s", saTable), LogType.INFO);
+
     }
 
     public enum ProfileOption { DEFAULT, OVERRIDDEN, ACTIVE }
-    public static void echoBqResourceMetadata(BigQueryResourceMetadata bqResourceMetadata, ProfileOption profileOption) {
+    public static void echoRunEnvironment(RunEnvironment runEnvironment, ProfileOption profileOption) {
         echoHorizontalLine(LogType.INFO);
         if (profileOption == ProfileOption.DEFAULT) {
             log("--- BigQuery default properties ---", LogType.CYAN);
-            echoBqResourceMetadata(
-                bqResourceMetadata.getProjectIdDefault(),
-                bqResourceMetadata.getDatasetNameDefault(),
-                bqResourceMetadata.getTableNameDefault()
+            echoRunEnvironment(
+                runEnvironment.getDefaultProjectIdDefault(),
+                runEnvironment.getDefaultDatasetDefault(),
+                runEnvironment.getDefaultTableDefault(),
+                runEnvironment.getSaProjectIdDefault(),
+                runEnvironment.getSaDatasetDefault(),
+                runEnvironment.getSaTableDefault()
             );
         } else if (profileOption == ProfileOption.OVERRIDDEN) {
             log("--- BigQuery overridden properties ---", LogType.CYAN);
-            echoBqResourceMetadata(
-                bqResourceMetadata.getProjectIdOverride(),
-                bqResourceMetadata.getDatasetNameOverride(),
-                bqResourceMetadata.getTableNameOverride()
+            echoRunEnvironment(
+                runEnvironment.getDefaultProjectIdOverride(),
+                runEnvironment.getDefaultDatasetOverride(),
+                runEnvironment.getDefaultTableOverride(),
+                runEnvironment.getSaProjectIdOverride(),
+                runEnvironment.getSaDatasetOverride(),
+                runEnvironment.getSaTableOverride()
             );
         } else if (profileOption == ProfileOption.ACTIVE) {
             log("BigQuery resource properties currently configured:", LogType.CYAN);
-            echoBqResourceMetadata(
-                bqResourceMetadata.getProjectId(),
-                bqResourceMetadata.getDatasetName(),
-                bqResourceMetadata.getTableName()
+            echoRunEnvironment(
+                runEnvironment.getDefaultProjectId(),
+                runEnvironment.getDefaultDataset(),
+                runEnvironment.getDefaultTable(),
+                runEnvironment.getSaProjectId(),
+                runEnvironment.getSaDataset(),
+                runEnvironment.getSaTable()
             );
         } else {
             log.error("Error: IntegrationTest.echoBigQueryResourceMetadata(): Invalid option specified.");

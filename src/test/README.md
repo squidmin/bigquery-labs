@@ -5,6 +5,8 @@ Instructions for running tests.
 
 ### Table admin
 
+If you're running the tests locally in a container instance, map your local `gcloud` directory to the `/root/.config/gcloud` directory in the container (as described <a href="https://github.com/squidmin/bigquery-labs#run-the-application">here</a>.)
+
 <details>
 <summary>List BigQuery resource metadata configured for a particular Spring profile</summary>
 
@@ -12,20 +14,22 @@ Instructions for running tests.
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
   test -P PROFILE_NAME \
-  -DprojectId="PROJECT_ID"
+  -DdefaultProjectId="DEFAULT_PROJECT_ID" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate for the method execution.
-- `PROJECT_ID`: the project ID for the GCP project to target.
+- `DEFAULT_PROJECT_ID`: the default user's GCP project ID to target.
 
-For example, assuming the name of the profile to activate is `integration`:
+Example:
 
 ```shell
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
   test -P integration \
-  -DprojectId="lofty-root-378503"
+  -DdefaultProjectId="lofty-root-378503" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
 ```
 
 The `-DargLine` parameter can also indicate the profile to activate.
@@ -35,12 +39,13 @@ The `-DargLine` parameter can also indicate the profile to activate.
   -DargLine="-Dspring.profiles.active=PROFILE_NAME" \
   -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
   test \
-  -DprojectId="PROJECT_ID"
+  -DdefaultProjectId="DEFAULT_PROJECT_ID" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID of the GCP project to target.
+- `DEFAULT_PROJECT_ID`: the default user's GCP project ID to target.
 
 For example, assuming the name of the profile to activate is `integration`:
 
@@ -49,7 +54,8 @@ For example, assuming the name of the profile to activate is `integration`:
   -DargLine="-Dspring.profiles.active=integration" \
   -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
   test \
-  -DprojectId="lofty-root-378503"
+  -DdefaultProjectId="lofty-root-378503" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
 ```
 
 </details>
@@ -62,12 +68,13 @@ For example, assuming the name of the profile to activate is `integration`:
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#listDatasets \
   test -P PROFILE_NAME \
-  -projectId="PROJECT_ID"
+  -DdefaultProjectId="DEFAULT_PROJECT_ID" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID of the GCP project to target.
+- `DEFAULT_PROJECT_ID`: the default user's GCP project ID to target.
 
 Example:
 
@@ -75,7 +82,8 @@ Example:
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#listDatasets \
   test -P integration \
-  -DprojectId=lofty-root-378503
+  -DdefaultProjectId="lofty-root-378503" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
 ```
 
 </details>
@@ -88,14 +96,15 @@ Example:
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#createDataset \
   test -P PROFILE_NAME \
-  -DprojectId="PROJECT_ID" \
-  -DdatasetName="DATASET_NAME"
+  -DdefaultProjectId="lofty-root-378503" \
+  -DdefaultDataset="test_dataset_integration" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID of the GCP project to target.
-- `DATASET_NAME`: the name of the dataset to target.
+- `DEFAULT_PROJECT_ID`: the default user's GCP project ID to target.
+- `DEFAULT_DATASET`: the default user's BigQuery dataset to target.
 
 Example:
 
@@ -103,8 +112,9 @@ Example:
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#createDataset \
   test -P integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_123"
+  -DdefaultProjectId="lofty-root-378503" \
+  -DdefaultDataset="test_dataset_integration" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
 ```
 
 </details>
@@ -117,16 +127,17 @@ Example:
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#createTableWithDefaultSchema \
   test -P PROFILE_NAME \
-  -DprojectId="PROJECT_ID" \
-  -DdatasetName="DATASET_NAME" \
-  -DtableName="TABLE_NAME"
+  -DdefaultProjectId="DEFAULT_PROJECT_ID" \
+  -DdefaultDataset="DEFAULT_DATASET" \
+  -DdefaultTable="DEFAULT_TABLE" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID of the GCP project to target.
-- `DATASET_NAME`: the name of the BigQuery dataset to target.
-- `TABLE_NAME`: the name of the BigQuery table to target.
+- `DEFAULT_PROJECT_ID`: the default user's GCP project ID to target.
+- `DEFAULT_DATASET`: the default user's BigQuery dataset to target.
+- `DEFAULT_TABLE`: default user's BigQuery table to target.
 
 Example using the `integration` profile:
 
@@ -134,9 +145,10 @@ Example using the `integration` profile:
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#createTableWithDefaultSchema \
   test -P integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_123" \
-  -DtableName="test_table_123"
+  -DdefaultProjectId="lofty-root-378503" \
+  -DdefaultDataset="test_dataset_integration" \
+  -DdefaultTable="test_table_integration_default" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
 ```
 
 </details>
@@ -149,17 +161,18 @@ Example using the `integration` profile:
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#createTableWithCustomSchema \
   test -P PROFILE_NAME \
-  -DprojectId="PROJECT_ID" \
-  -DdatasetName="DATASET_NAME" \
-  -DtableName="TABLE_NAME" \
-  -Dschema="name_1,datatype_1;name_2,datatype_2;[...];name_n,datatype_n"
+  -DdefaultProjectId="DEFAULT_PROJECT_ID" \
+  -DdefaultDataset="DEFAULT_DATASET" \
+  -DdefaultTable="DEFAULT_TABLE" \
+  -Dschema="name_1,datatype_1;name_2,datatype_2;[...];name_n,datatype_n" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
 ```
 
 **Replace the following**:
-- `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the name of the GCP project ID to target.
-- `DATASET_NAME`: the name of the BigQuery dataset to target.
-- `TABLE_NAME`: the name of the BigQuery table to target.
+- `PROFILE_NAME`: the name of the application profile to activate.
+- `DEFAULT_PROJECT_ID`: the default user's GCP project ID to target.
+- `DEFAULT_DATASET`: the default user's BigQuery dataset to target.
+- `DEFAULT_TABLE`: the default user's BigQuery table to target.
 
 Example using the `integration` profile:
 
@@ -167,10 +180,11 @@ Example using the `integration` profile:
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#createTableWithCustomSchema \
   test -P integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_name_integration" \
-  -DtableName="test_table_name_integration" \
-  -Dschema="id,string;client_name,string;active,bool;creation_timestamp,datetime;last_update_timestamp,datetime"
+  -DdefaultProjectId="lofty-root-378503" \
+  -DdefaultDataset="test_dataset_integration" \
+  -DdefaultTable="test_table_integration_custom" \
+  -Dschema="id,string;client_name,string;active,bool;creation_timestamp,datetime;last_update_timestamp,datetime" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
 ```
 
 </details>

@@ -139,6 +139,12 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <!-- maven:net.minidev:json-smart:2.4.7 -->
+                <groupId>net.minidev</groupId>
+                <artifactId>json-smart</artifactId>
+                <version>2.4.10</version>
+            </dependency>
 <!--            <dependency>-->
 <!--                <groupId>junit</groupId>-->
 <!--                <artifactId>junit</artifactId>-->

@@ -11,12 +11,12 @@ import org.squidmin.bigquery.config.BigQueryConfig;
 import org.squidmin.bigquery.config.IntegrationTestConfig;
 import org.squidmin.bigquery.fixture.BigQueryTestFixture;
 import org.squidmin.bigquery.service.BigQueryAdminClient;
-import org.squidmin.bigquery.util.BigQueryResourceMetadata;
+import org.squidmin.bigquery.util.RunEnvironment;
 import org.squidmin.bigquery.util.BigQueryUtil;
 import org.squidmin.bigquery.logger.Logger;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { BigQueryAdminClient.class, IntegrationTestConfig.class })
+@SpringBootTest(classes = {BigQueryAdminClient.class, IntegrationTestConfig.class})
 @ActiveProfiles("integration")
 @Slf4j
 public abstract class IntegrationTest {
@@ -26,16 +26,23 @@ public abstract class IntegrationTest {
 
     protected BigQueryAdminClient bigQueryAdminClient;
 
-    protected String projectIdDefault, datasetNameDefault, tableNameDefault,
-                     projectIdOverride, datasetNameOverride, tableNameOverride, schemaOverride;
+    protected String
+        defaultProjectIdDefault, defaultDatasetDefault, defaultTableDefault,
+        defaultProjectIdCliOverride, defaultDatasetCliOverride, defaultTableCliOverride,
+        saProjectIdDefault, saDatasetDefault, saTableDefault,
+        saProjectIdCliOverride, saDatasetCliOverride, saTableCliOverride,
+        schemaOverrideString;
+
     protected org.squidmin.bigquery.config.Schema schemaDefault;
     protected com.google.cloud.bigquery.Schema _schemaOverride;
 
     // The default values of configured BigQuery resource properties can be overridden by the values of CLI arguments.
-    protected String PROJECT_ID, DATASET_NAME, TABLE_NAME;
+    protected String
+        DEFAULT_PROJECT_ID, DEFAULT_DATASET, DEFAULT_TABLE,
+        SA_PROJECT_ID, SA_DATASET, SA_TABLE;
     protected com.google.cloud.bigquery.Schema SCHEMA;
 
-    protected BigQueryResourceMetadata bqResourceMetadata = BigQueryResourceMetadata.builder().build();
+    protected RunEnvironment runEnvironment = RunEnvironment.builder().build();
 
     @Before
     public void before() {
@@ -52,42 +59,88 @@ public abstract class IntegrationTest {
     }
 
     private void initBqResourcePropertyDefaultValues() {
-        projectIdDefault = bqConfig.getProjectId();
-        datasetNameDefault = bqConfig.getDatasetName();
-        tableNameDefault = bqConfig.getTableName();
+        // Class-level initializers.
+        defaultProjectIdDefault = bqConfig.getDefaultProjectId();
+        defaultDatasetDefault = bqConfig.getDefaultDataset();
+        defaultTableDefault = bqConfig.getDefaultTable();
+
+        saProjectIdDefault = bqConfig.getSaProjectId();
+        saDatasetDefault = bqConfig.getSaDataset();
+        saTableDefault = bqConfig.getSaTable();
+
         schemaDefault = bqConfig.getSchema();
-        bqResourceMetadata = BigQueryResourceMetadata.builder()
-            .projectIdDefault(bqConfig.getProjectId())
-            .datasetNameDefault(bqConfig.getDatasetName())
-            .tableNameDefault(bqConfig.getTableName())
+
+        // Set default run environment properties from Spring @Configuration classes.
+        runEnvironment = RunEnvironment.builder()
+            .defaultProjectIdDefault(bqConfig.getDefaultProjectId())
+            .defaultDatasetDefault(bqConfig.getDefaultDataset())
+            .defaultTableDefault(bqConfig.getDefaultTable())
+            .saProjectId(bqConfig.getSaProjectId())
+            .saDataset(bqConfig.getSaDataset())
+            .saTable(bqConfig.getSaTable())
             .schema(BigQueryUtil.translate(bqConfig.getSchema()))
             .build();
     }
 
     private void initBqResourcePropertyOverriddenValues() {
-        projectIdOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.projectId.name());
-        datasetNameOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.datasetName.name());
-        tableNameOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.tableName.name());
-        schemaOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.schema.name());
-        if (null != schemaOverride) { _schemaOverride = BigQueryUtil.translate(schemaOverride); }
+        defaultProjectIdCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.defaultProjectId.name());
+        defaultDatasetCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.defaultDataset.name());
+        defaultTableCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.defaultTable.name());
+
+        saProjectIdCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.saProjectId.name());
+        saDatasetCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.saDataset.name());
+        saTableCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.saTable.name());
+
+        schemaOverrideString = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.schema.name());
+        if (isNotEmpty(schemaOverrideString)) {
+            _schemaOverride = BigQueryUtil.translate(schemaOverrideString);
+        }
     }
 
     private void initBqResourcePropertyMetadata() {
-        bqResourceMetadata.setProjectId(setBqResourceProperty(projectIdDefault, projectIdOverride));
-        bqResourceMetadata.setDatasetName(setBqResourceProperty(datasetNameDefault, datasetNameOverride));
-        bqResourceMetadata.setTableName(setBqResourceProperty(tableNameDefault, tableNameOverride));
-        bqResourceMetadata.setSchema(null != schemaOverride ? _schemaOverride : BigQueryUtil.translate(schemaDefault));
+        // Run environment defaults.
+        runEnvironment.setDefaultProjectIdDefault(defaultProjectIdDefault);
+        runEnvironment.setDefaultDatasetDefault(defaultDatasetDefault);
+        runEnvironment.setDefaultTableDefault(defaultTableDefault);
+
+        runEnvironment.setSaProjectIdDefault(saProjectIdDefault);
+        runEnvironment.setSaDatasetDefault(saDatasetDefault);
+        runEnvironment.setSaTableDefault(saTableDefault);
+
+        // Override default properties with values of CLI arguments.
+        runEnvironment.setDefaultProjectId(setBqResourceProperty(defaultProjectIdDefault, defaultProjectIdCliOverride));
+        runEnvironment.setDefaultDataset(setBqResourceProperty(defaultDatasetDefault, defaultDatasetCliOverride));
+        runEnvironment.setDefaultTable(setBqResourceProperty(defaultTableDefault, defaultTableCliOverride));
+
+        runEnvironment.setSaProjectId(setBqResourceProperty(saProjectIdDefault, saProjectIdCliOverride));
+        runEnvironment.setSaDataset(setBqResourceProperty(saDatasetDefault, saDatasetCliOverride));
+        runEnvironment.setSaTable(setBqResourceProperty(saTableDefault, saTableCliOverride));
+
+        // Set table schema in the run environment.
+        runEnvironment.setSchema(
+            isNotEmpty(schemaOverrideString) ?
+                _schemaOverride :
+                BigQueryUtil.translate(schemaDefault)
+        );
     }
 
     private void initBqResourceActiveProperties() {
-        PROJECT_ID = bqResourceMetadata.getProjectId();
-        DATASET_NAME = bqResourceMetadata.getDatasetName();
-        TABLE_NAME = bqResourceMetadata.getTableName();
-        SCHEMA = bqResourceMetadata.getSchema();
+        // Set integration test class level variables for active run environment.
+        DEFAULT_PROJECT_ID = runEnvironment.getDefaultProjectId();
+        DEFAULT_DATASET = runEnvironment.getDefaultDataset();
+        DEFAULT_TABLE = runEnvironment.getDefaultTable();
+
+        SA_PROJECT_ID = runEnvironment.getSaProjectId();
+        SA_DATASET = runEnvironment.getSaDataset();
+        SA_TABLE = runEnvironment.getSaTable();
+
+        SCHEMA = runEnvironment.getSchema();
     }
 
     private String setBqResourceProperty(String defaultValue, String overrideValue) {
         return null != overrideValue ? overrideValue : defaultValue;
     }
+
+    private boolean isNotEmpty(String str) { return null != str && 0 != str.length(); }
 
 }

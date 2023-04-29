@@ -12,35 +12,33 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
 
     @Test
     public void echoDefaultBigQueryResourceMetadata() {
-        Logger.echoBqResourceMetadata(bqResourceMetadata, Logger.ProfileOption.DEFAULT);
+        Logger.echoRunEnvironment(runEnvironment, Logger.ProfileOption.DEFAULT);
     }
 
     @Test
-    public void listDatasets() {
-        bigQueryAdminClient.listDatasets(PROJECT_ID);
-    }
+    public void listDatasets() { bigQueryAdminClient.listDatasets(); }
 
     @Test
     public void createDataset() {
-        bigQueryAdminClient.createDataset(DATASET_NAME);
+        bigQueryAdminClient.createDataset(DEFAULT_DATASET);
     }
 
     @Test
     public void createTableWithDefaultSchema() {
-        Logger.echoBqResourceMetadata(bqResourceMetadata, Logger.ProfileOption.ACTIVE);
+        Logger.echoRunEnvironment(runEnvironment, Logger.ProfileOption.ACTIVE);
         Assertions.assertTrue(
-            bigQueryAdminClient.createTable(DATASET_NAME, TABLE_NAME)
+            bigQueryAdminClient.createTable(DEFAULT_DATASET, DEFAULT_TABLE)
         );
     }
 
     @Test
     public void createTableWithCustomSchema() {
-        Logger.echoBqResourceMetadata(bqResourceMetadata, Logger.ProfileOption.ACTIVE);
+        Logger.echoRunEnvironment(runEnvironment, Logger.ProfileOption.ACTIVE);
         Assertions.assertTrue(
             bigQueryAdminClient.createTable(
-                DATASET_NAME,
-                TABLE_NAME,
-                BigQueryUtil.translate(schemaOverride)
+                DEFAULT_DATASET,
+                DEFAULT_TABLE,
+                BigQueryUtil.translate(schemaOverrideString)
             )
         );
     }

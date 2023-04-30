@@ -7,7 +7,8 @@ public class Logger {
 
     public static short HORIZONTAL_LINE_WIDTH = 50;
 
-    public enum LogType { INFO, DEBUG, ERROR, CYAN }
+    public enum LogType {INFO, DEBUG, ERROR, CYAN}
+
     public static void log(String str, LogType logType) {
         if (logType == LogType.INFO) {
             str = LogFont.boldGreen(str);

@@ -11,10 +11,10 @@ import org.squidmin.bigquery.config.BigQueryConfig;
 import org.squidmin.bigquery.config.IntegrationTestConfig;
 import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
 import org.squidmin.bigquery.fixture.BigQueryTestFixture;
-import org.squidmin.bigquery.service.BigQueryAdminClient;
-import org.squidmin.bigquery.util.RunEnvironment;
-import org.squidmin.bigquery.util.BigQueryUtil;
 import org.squidmin.bigquery.logger.Logger;
+import org.squidmin.bigquery.service.BigQueryAdminClient;
+import org.squidmin.bigquery.util.BigQueryUtil;
+import org.squidmin.bigquery.util.RunEnvironment;
 import org.squidmin.bigquery.util.StringUtils;
 
 @RunWith(SpringRunner.class)

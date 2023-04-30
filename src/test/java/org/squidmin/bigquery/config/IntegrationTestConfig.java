@@ -48,25 +48,39 @@ public class IntegrationTestConfig {
     private BigQueryConfig bqConfig;
 
     @Bean
-    public String defaultProjectId() { return defaultProjectId; }
+    public String defaultProjectId() {
+        return defaultProjectId;
+    }
 
     @Bean
-    public String defaultDataset() { return defaultDataset; }
+    public String defaultDataset() {
+        return defaultDataset;
+    }
 
     @Bean
-    public String defaultTable() { return defaultTable; }
+    public String defaultTable() {
+        return defaultTable;
+    }
 
     @Bean
-    public String saProjectId() { return saProjectId; }
+    public String saProjectId() {
+        return saProjectId;
+    }
 
     @Bean
-    public String saDataset() { return saDataset; }
+    public String saDataset() {
+        return saDataset;
+    }
 
     @Bean
-    public String saTable() { return saTable; }
+    public String saTable() {
+        return saTable;
+    }
 
     @Bean
-    public SchemaDefault schema() { return schemaDefault; }
+    public SchemaDefault schema() {
+        return schemaDefault;
+    }
 
     @Bean
     public DataTypes dataTypes() {
@@ -74,10 +88,14 @@ public class IntegrationTestConfig {
     }
 
     @Bean
-    public SelectFieldsDefault selectFields() { return selectFieldsDefault; }
+    public SelectFieldsDefault selectFields() {
+        return selectFieldsDefault;
+    }
 
     @Bean
-    public WhereFieldsDefault whereFields() { return whereFieldsDefault; }
+    public WhereFieldsDefault whereFields() {
+        return whereFieldsDefault;
+    }
 
     @Bean
     public BigQueryConfig bigQueryConfig() {

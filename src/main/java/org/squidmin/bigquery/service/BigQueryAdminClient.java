@@ -4,7 +4,6 @@ import autovalue.shaded.com.google.common.collect.ImmutableMap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.gax.paging.Page;
-
 import com.google.cloud.bigquery.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -68,15 +67,15 @@ public class BigQueryAdminClient {
         }
     }
 
-    public boolean createDataset(String datasetName) {
+    public boolean createDataset(String dataset) {
         try {
-            DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetName).build();
+            DatasetInfo datasetInfo = DatasetInfo.newBuilder(dataset).build();
             Dataset newDataset = bq.create(datasetInfo);
             String newDatasetName = newDataset.getDatasetId().getDataset();
             Logger.log(String.format("Dataset \"%s\" created successfully.", newDatasetName), Logger.LogType.INFO);
         } catch (BigQueryException e) {
             Logger.log(
-                String.format("%s: Dataset \"%s\" was not created.", e.getClass().getName(), datasetName),
+                String.format("%s: Dataset \"%s\" was not created.", e.getClass().getName(), dataset),
                 Logger.LogType.ERROR
             );
             Logger.log(e.getMessage(), Logger.LogType.ERROR);
@@ -85,31 +84,37 @@ public class BigQueryAdminClient {
         return true;
     }
 
-    public void deleteDataset(String projectId, String datasetName) {
+    public void deleteDataset(String projectId, String dataset) {
         try {
-            DatasetId datasetId = DatasetId.of(projectId, datasetName);
+            DatasetId datasetId = DatasetId.of(projectId, dataset);
             boolean success = bq.delete(datasetId);
-            if (success) { Logger.log(String.format("Dataset \"%s\" deleted successfully.", datasetName), Logger.LogType.INFO); }
-            else { Logger.log(String.format("Dataset \"%s\" was not found in project \"%s\".", datasetName, projectId), Logger.LogType.INFO); }
+            if (success) {
+                Logger.log(String.format("Dataset \"%s\" deleted successfully.", dataset), Logger.LogType.INFO);
+            } else {
+                Logger.log(String.format("Dataset \"%s\" was not found in project \"%s\".", dataset, projectId), Logger.LogType.INFO);
+            }
         } catch (BigQueryException e) {
-            Logger.log(String.format("Dataset \"%s\" was not deleted.", datasetName), Logger.LogType.ERROR);
+            Logger.log(String.format("Dataset \"%s\" was not deleted.", dataset), Logger.LogType.ERROR);
         }
     }
 
-    public void deleteDatasetAndContents(String projectId, String datasetName) {
+    public void deleteDatasetAndContents(String projectId, String dataset) {
         try {
-            DatasetId datasetId = DatasetId.of(projectId, datasetName);
-            // Use the force parameter to delete a dataset and its contents
+            DatasetId datasetId = DatasetId.of(projectId, dataset);
             boolean success = bq.delete(datasetId, BigQuery.DatasetDeleteOption.deleteContents());
-            if (success) { Logger.log(String.format("Dataset \"%s\" and its contents deleted successfully.", datasetName), Logger.LogType.INFO); }
-            else { Logger.log(String.format("Dataset \"%s\" was not found in project \"%s\".", datasetName, projectId), Logger.LogType.INFO); }
+            if (success) {
+                Logger.log(String.format("Dataset \"%s\" and its contents deleted successfully.", dataset), Logger.LogType.INFO);
+            } else {
+                Logger.log(String.format("Dataset \"%s\" was not found in project \"%s\".", dataset, projectId), Logger.LogType.INFO);
+            }
         } catch (BigQueryException e) {
-            Logger.log(String.format("Dataset \"%s\" was not deleted with contents.", datasetName), Logger.LogType.ERROR);
+            Logger.log(String.format("Dataset \"%s\" was not deleted with contents.", dataset), Logger.LogType.ERROR);
         }
     }
 
     public boolean createTable(String dataset, String table) {
-        return createTable(dataset, table, BigQueryUtil.InlineSchemaTranslator.translate(bqConfig.getSchemaDefault(), bqConfig.getDataTypes()));
+        Schema schema = BigQueryUtil.InlineSchemaTranslator.translate(bqConfig.getSchemaDefault(), bqConfig.getDataTypes());
+        return createTable(dataset, table, schema);
     }
 
     public boolean createTable(String dataset, String table, Schema schema) {
@@ -131,13 +136,16 @@ public class BigQueryAdminClient {
         return true;
     }
 
-    public void deleteTable(String projectId, String datasetName, String tableName) {
+    public void deleteTable(String projectId, String dataset, String table) {
         try {
-            boolean success = bq.delete(TableId.of(datasetName, tableName));
-            if (success) { Logger.log("Table deleted successfully", Logger.LogType.INFO); }
-            else { Logger.log("Table was not found", Logger.LogType.INFO); }
+            boolean success = bq.delete(TableId.of(projectId, dataset, table));
+            if (success) {
+                Logger.log("Table deleted successfully", Logger.LogType.INFO);
+            } else {
+                Logger.log("Table was not found", Logger.LogType.INFO);
+            }
         } catch (BigQueryException e) {
-            Logger.log(String.format("Table %s was not deleted.", tableName), Logger.LogType.ERROR);
+            Logger.log(String.format("Table %s was not deleted.", table), Logger.LogType.ERROR);
             Logger.log(e.getMessage(), Logger.LogType.ERROR);
         }
     }

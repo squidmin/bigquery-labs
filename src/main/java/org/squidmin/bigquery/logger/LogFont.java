@@ -14,8 +14,12 @@ public class LogFont {
         return BOLD + GREEN + arg + RESET;
     }
 
-    public static String boldCyan(String arg) { return BOLD + CYAN + arg + RESET; }
+    public static String boldCyan(String arg) {
+        return BOLD + CYAN + arg + RESET;
+    }
 
-    public static String bold(String arg) { return BOLD + arg + RESET; }
+    public static String bold(String arg) {
+        return BOLD + arg + RESET;
+    }
 
 }

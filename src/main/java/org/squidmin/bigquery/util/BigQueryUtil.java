@@ -11,7 +11,10 @@ import org.squidmin.bigquery.dto.ResponseExample;
 import org.squidmin.bigquery.logger.Logger;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -33,7 +36,9 @@ public class BigQueryUtil {
                     String name = _selectFields.get(j);
                     Map v = (Map) f.get(j);
                     String value = (String) v.get("v");
-                    if (_selectFields.contains(name)) { r.setFromBigQueryResponse(name, value); }
+                    if (_selectFields.contains(name)) {
+                        r.setFromBigQueryResponse(name, value);
+                    }
                 }
                 response.add(r);
             }
@@ -90,7 +95,8 @@ public class BigQueryUtil {
 
     }
 
-    public enum ProfileOption { DEFAULT, OVERRIDDEN, ACTIVE }
+    public enum ProfileOption {DEFAULT, OVERRIDDEN, ACTIVE}
+
     public static void echoRunEnvironment(RunEnvironment runEnvironment, ProfileOption profileOption) {
         Logger.echoHorizontalLine(Logger.LogType.INFO);
         if (profileOption == ProfileOption.DEFAULT) {
@@ -168,6 +174,7 @@ public class BigQueryUtil {
             Logger.log("Finished generating schema.", Logger.LogType.CYAN);
             return com.google.cloud.bigquery.Schema.of(fields);
         }
+
         private static StandardSQLTypeName translateType(String type, DataTypes dataTypes) {
             if (dataTypes.getDataTypes().contains(type)) {
                 return StandardSQLTypeName.valueOf(type);

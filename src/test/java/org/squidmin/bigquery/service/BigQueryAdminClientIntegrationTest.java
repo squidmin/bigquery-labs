@@ -20,7 +20,9 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
     }
 
     @Test
-    public void listDatasets() { bigQueryAdminClient.listDatasets(); }
+    public void listDatasets() {
+        bigQueryAdminClient.listDatasets();
+    }
 
     @Test
     public void createDataset() {
@@ -28,7 +30,9 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
     }
 
     @Test
-    public void deleteDataset() { bigQueryAdminClient.deleteDataset(DEFAULT_PROJECT_ID, DEFAULT_DATASET); }
+    public void deleteDataset() {
+        bigQueryAdminClient.deleteDataset(DEFAULT_PROJECT_ID, DEFAULT_DATASET);
+    }
 
     @Test
     public void createTableWithDefaultSchema() {

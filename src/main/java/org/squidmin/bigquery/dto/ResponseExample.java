@@ -20,12 +20,19 @@ public class ResponseExample {
     private String columnB;
 
     public void setFromBigQueryResponse(String name, String value) {
-        if (name.equalsIgnoreCase("id")) { setId(value); }
-        else if (name.equalsIgnoreCase("creation_timestamp")) { setCreationTimestamp(value); }
-        else if (name.equalsIgnoreCase("last_update_timestamp")) { setLastUpdateTimestamp(value); }
-        else if (name.equalsIgnoreCase("columnA")) { setColumnA(value); }
-        else if (name.equalsIgnoreCase("columnB")) { setColumnB(value); }
-        else { log.error("Value associated with name is null."); }
+        if (name.equalsIgnoreCase("id")) {
+            setId(value);
+        } else if (name.equalsIgnoreCase("creation_timestamp")) {
+            setCreationTimestamp(value);
+        } else if (name.equalsIgnoreCase("last_update_timestamp")) {
+            setLastUpdateTimestamp(value);
+        } else if (name.equalsIgnoreCase("column_a")) {
+            setColumnA(value);
+        } else if (name.equalsIgnoreCase("column_b")) {
+            setColumnB(value);
+        } else {
+            log.error("Value associated with name is null.");
+        }
     }
 
 }

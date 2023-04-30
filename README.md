@@ -134,7 +134,7 @@ mvn clean package
 
 ```shell
 docker build \
-  --build-arg GCP_PROJECT_ID=PROJECT_ID \
+  --build-arg GCP_PROJECT_ID=$GCP_PROJECT_ID \
   -t bigquery-labs .
 ```
 
@@ -146,7 +146,8 @@ docker build \
 
 ## Run the application
 
-### 1. Run an interactive container instance
+
+### 1. Prepare the container environment
 
 <details>
 <summary>Expand</summary>
@@ -158,27 +159,86 @@ The user's service account key file is mapped to the `/root/.config/gcloud` dire
 export GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/sa-private-key.json
 ```
 
-The `GCP_ACCESS_TOKEN` environment variable is used to store an OAuth2 access token for reaching BigQuery RESTful services.
-
 ```shell
-export GCP_ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
+export GOOGLE_APPLICATION_CREDENTIALS=$(gcloud auth application-default print-access-token)
 ```
 
-Run command:
+The `GCP_ACCESS_TOKEN` environment variable is used to store an OAuth2 access token for reaching BigQuery RESTful services _as a specific service account_.
 
 ```shell
-docker run \
-  --rm -it \
-  -e GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/sa-private-key.json \
-  -e GCP_ACCESS_TOKEN=$(gcloud auth application-default print-access-token) \
+export GCP_SA_ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
+```
+
+The `ADC_ACCESS_TOKEN` environment variable is used to store an OAuth2 access token for reaching BigQuery RESTful services _using Application Default Credentials_.
+
+```shell
+export GCP_ADC_ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
+```
+
+### Utility script (WIP)
+
+The `run.sh` script at the root level of the project will set required environment variables automatically.
+
+It accepts short and long arguments for each environment variable.
+
+</details>
+
+
+### 2. Run an interactive container instance
+
+<details>
+<summary>Expand</summary>
+
+### `docker run`
+
+```shell
+docker run --rm -it \
+  -e GOOGLE_APPLICATION_CREDENTIALS=lofty-root-378503 \
+  -e GCP_SA_ACCESS_TOKEN=access_token_placeholder \
+  -e ADC_ACCESS_TOKEN=$(gcloud auth application-default print-access-token) \
   -v $HOME/.config/gcloud:/root/.config/gcloud \
   -v $HOME/.m2:/root/.m2 \
   bigquery-labs
 ```
 
+### Utility script
+
+```shell
+./run.sh \
+  -gcppid lofty-root-378503 \
+  -gac $HOME/.config/gcloud/sa-private-key.json \
+  -saat access_token_placeholder \
+  -adcat $(gcloud auth application-default print-access-token)
+```
+
+Or use long arguments:
+
+```shell
+./run.sh \
+  --GCP_PROJECT_ID lofty-root-378503 \
+  --GOOGLE_APPLICATION_CREDENTIALS $HOME/.config/gcloud/sa-private-key.json \
+  --GCP_SA_ACCESS_TOKEN access_token_placeholder \
+  --GCP_ADC_ACCESS_TOKEN $(gcloud auth application-default print-access-token)
+  
+```
+
+The `run.sh` script implements the following options:
+- `--default`: Start the application on the user's host system with default run environment settings.
+
+    ```shell
+    ./run.sh --default
+    ```
+
+- `-ci`, `--container-instance`: Run a container instance pointing to the root directory of the application.
+- `-nci`, `--no-container-instance`: Build and run the application without starting a container instance.
+- `-i SA_EMAIL_ADDRESS`, `--impersonate SA_EMAIL_ADDRESS`: Impersonate a GCP service account. Replace `SA_EMAIL_ADDRESS` with the email address of the service account to impersonate.
+
+When specifying both the `--default` and `--container-instance` options, a container instance will start with default run environment settings. 
+
 </details>
 
-### 2. Run the JAR
+
+### 3. Run the JAR
 
 > Note: This section is for testing the main application entrypoint only.
 >

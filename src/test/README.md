@@ -15,7 +15,8 @@ If you're running the tests locally in a container instance, map your local `gcl
   -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
   test -P PROFILE_NAME \
   -DdefaultProjectId="DEFAULT_PROJECT_ID" \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$DGCP_ADC_ACCESS_TOKEN
 ```
 
 **Replace the following**:
@@ -29,7 +30,8 @@ Example:
   -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
   test -P integration \
   -DdefaultProjectId="lofty-root-378503" \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
 ```
 
 The `-DargLine` parameter can also indicate the profile to activate.

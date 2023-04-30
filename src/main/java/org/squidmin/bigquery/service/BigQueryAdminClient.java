@@ -150,11 +150,11 @@ public class BigQueryAdminClient {
         }
     }
 
-    public List<InsertAllRequest.RowToInsert> insert(List<RecordExample> records) {
+    public List<InsertAllRequest.RowToInsert> insert(String projectId, String dataset, String table, List<RecordExample> records) {
         try {
             List<InsertAllRequest.RowToInsert> rowsToInsert = new ArrayList<>();
 
-            TableId tableId = TableId.of(bqConfig.getDefaultDataset(), bqConfig.getDefaultTable());
+            TableId tableId = TableId.of(projectId, dataset, table);
 
             Map<String, Object> rowContent = new HashMap<>();
 

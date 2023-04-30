@@ -57,15 +57,16 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
     @Test
     public void deleteTable() {
         bigQueryAdminClient.deleteTable(
-            runEnvironment.getDefaultProjectId(),
-            runEnvironment.getDefaultDataset(),
-            runEnvironment.getDefaultTable()
+            DEFAULT_PROJECT_ID,
+            DEFAULT_DATASET,
+            DEFAULT_TABLE
         );
     }
 
     @Test
     public void insert() {
-        List<InsertAllRequest.RowToInsert> rowsInserted = bigQueryAdminClient.insert(BigQueryTestFixture.DEFAULT_ROWS.get());
+        List<InsertAllRequest.RowToInsert> rowsInserted = bigQueryAdminClient.insert(DEFAULT_PROJECT_ID, DEFAULT_DATASET, DEFAULT_TABLE, BigQueryTestFixture.DEFAULT_ROWS.get());
+        Assertions.assertTrue(0 < rowsInserted.size());
         rowsInserted.forEach(row -> Logger.log(String.valueOf(row), Logger.LogType.INFO));
     }
 

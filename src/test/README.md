@@ -233,3 +233,20 @@ Example using the `integration` profile:
 ```
 
 </details>
+
+
+<details>
+<summary>Insert rows</summary>
+
+```shell
+./mvnw \
+  -Dtest=BigQueryAdminClientIntegrationTest#insert \
+  test -P integration \
+  -DdefaultProjectId=$GCP_PROJECT_ID \
+  -DdefaultDataset="test_dataset_integration" \
+  -DdefaultTable="test_table_integration_custom" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
+```
+
+</details>

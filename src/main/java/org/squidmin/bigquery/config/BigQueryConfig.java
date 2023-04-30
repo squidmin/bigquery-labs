@@ -5,13 +5,15 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
-import jdk.jshell.JShell;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
+import org.squidmin.bigquery.config.tables.sandbox.SelectFieldsDefault;
+import org.squidmin.bigquery.config.tables.sandbox.WhereFieldsDefault;
 import org.squidmin.bigquery.logger.Logger;
 import org.squidmin.bigquery.util.StringUtils;
 
@@ -38,11 +40,12 @@ public class BigQueryConfig {
     private final String saKeyPath;
     private final String gcpAccessToken;
 
-    private final Schema schema;
+    private final SchemaDefault schemaDefault;
+    private final DataTypes dataTypes;
+    private final SelectFieldsDefault selectFieldsDefault;
+    private final WhereFieldsDefault whereFieldsDefault;
 
     private final BigQuery bigQuery;
-
-    private final DataTypes dataTypes;
 
     @Autowired
     public BigQueryConfig(@Value("${bigquery.application-default.project-id}") String defaultProjectId,
@@ -51,8 +54,10 @@ public class BigQueryConfig {
                           @Value("${bigquery.service-account.project-id}") String saProjectId,
                           @Value("${bigquery.service-account.dataset}") String saDataset,
                           @Value("${bigquery.service-account.table}") String saTable,
-                          Schema schema,
-                          DataTypes dataTypes) {
+                          SchemaDefault schemaDefault,
+                          DataTypes dataTypes,
+                          SelectFieldsDefault selectFieldsDefault,
+                          WhereFieldsDefault whereFieldsDefault) {
 
         this.defaultProjectId = defaultProjectId;
         this.defaultDataset = defaultDataset;
@@ -69,8 +74,10 @@ public class BigQueryConfig {
 //        Logger.log(String.format("BQ JDK: GOOGLE_APPLICATION_CREDENTIALS == %s", this.saKeyPath), Logger.LogType.CYAN);
         File credentialsPath = new File(saKeyPath);
 
-        this.schema = schema;
+        this.schemaDefault = schemaDefault;
         this.dataTypes = dataTypes;
+        this.selectFieldsDefault = selectFieldsDefault;
+        this.whereFieldsDefault = whereFieldsDefault;
 
         BigQueryOptions.Builder bqOptionsBuilder = BigQueryOptions.newBuilder();
         bqOptionsBuilder.setProjectId(defaultProjectId).setLocation("us");
@@ -84,33 +91,36 @@ public class BigQueryConfig {
         } catch (IOException e) {
             Logger.log(e.getMessage(), Logger.LogType.ERROR);
             if (e.getMessage().contains("'type' value 'authorized_user' not recognized. Expecting 'service_account'")) {
-                Logger.log("If you're trying to use Application Default Credentials, use the command:", Logger.LogType.ERROR);
+                Logger.log("If you're trying to use Application Default Credentials (ADC), use the command:", Logger.LogType.ERROR);
                 Logger.log("    gcloud auth application-default print-access-token", Logger.LogType.ERROR);
                 Logger.log("to generate a GCP access token and set the output of the command to the \"GOOGLE_APPLICATION_CREDENTIALS\" environment variable.", Logger.LogType.ERROR);
             }
             isBqJdkAuthenticatedUsingSaKeyFile = false;
         }
 
-        if (isBqJdkAuthenticatedUsingSaKeyFile) {
-            Logger.log("BigQuery Java SDK has authenticated successfully using a service account key file.", Logger.LogType.INFO);
-        } else {
-            Logger.log("BigQuery JDK was not able to authenticate using a service account key file.", Logger.LogType.INFO);
-            Logger.log("Attempting to authenticate using Application Default Credentials access token.", Logger.LogType.INFO);
-        }
+        logSaKeyFileAuth(isBqJdkAuthenticatedUsingSaKeyFile);
 
         String adcAccessToken = System.getProperty("GCP_ADC_ACCESS_TOKEN");
         if (!isBqJdkAuthenticatedUsingSaKeyFile && StringUtils.isNotEmpty(adcAccessToken)) {
             bigQuery = bqOptionsBuilder.setCredentials(
                 GoogleCredentials.newBuilder()
-                    .setAccessToken(
-                        AccessToken.newBuilder().setTokenValue(adcAccessToken).build()
-                    ).build()
+                    .setAccessToken(AccessToken.newBuilder().setTokenValue(adcAccessToken).build()).build()
             ).build().getService();
+            Logger.log("Authenticated successfully using Application Default Credentials (ADC) access token.", Logger.LogType.INFO);
         } else {
             bigQuery = bqOptionsBuilder.build().getService();
-            Logger.log("Was not able to authenticate using Application Default Credentials access token.", Logger.LogType.INFO);
+            Logger.log("Was not able to authenticate using Application Default Credentials (ADC) access token.", Logger.LogType.INFO);
         }
 
+    }
+
+    private static void logSaKeyFileAuth(boolean isBqJdkAuthenticatedUsingSaKeyFile) {
+        if (isBqJdkAuthenticatedUsingSaKeyFile) {
+            Logger.log("BigQuery Java SDK has authenticated successfully using a service account key file.", Logger.LogType.INFO);
+        } else {
+            Logger.log("BigQuery JDK was not able to authenticate using a service account key file.", Logger.LogType.INFO);
+            Logger.log("Attempting to authenticate using Application Default Credentials.", Logger.LogType.INFO);
+        }
     }
 
 }

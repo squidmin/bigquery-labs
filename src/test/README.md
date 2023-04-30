@@ -29,7 +29,7 @@ Example:
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
   test -P integration \
-  -DdefaultProjectId="lofty-root-378503" \
+  -DdefaultProjectId=$GCP_PROJECT_ID \
   -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
   -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
 ```
@@ -42,7 +42,8 @@ The `-DargLine` parameter can also indicate the profile to activate.
   -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
   test \
   -DdefaultProjectId="DEFAULT_PROJECT_ID" \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
 ```
 
 **Replace the following**:
@@ -57,7 +58,8 @@ For example, assuming the name of the profile to activate is `integration`:
   -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
   test \
   -DdefaultProjectId="lofty-root-378503" \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
 ```
 
 </details>
@@ -71,7 +73,8 @@ For example, assuming the name of the profile to activate is `integration`:
   -Dtest=BigQueryAdminClientIntegrationTest#listDatasets \
   test -P PROFILE_NAME \
   -DdefaultProjectId="DEFAULT_PROJECT_ID" \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
 ```
 
 **Replace the following**:
@@ -84,8 +87,9 @@ Example:
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#listDatasets \
   test -P integration \
-  -DdefaultProjectId="lofty-root-378503" \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  -DdefaultProjectId=$GCP_PROJECT_ID \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
 ```
 
 </details>
@@ -100,7 +104,8 @@ Example:
   test -P PROFILE_NAME \
   -DdefaultProjectId="lofty-root-378503" \
   -DdefaultDataset="test_dataset_integration" \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
 ```
 
 **Replace the following**:
@@ -114,16 +119,33 @@ Example:
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#createDataset \
   test -P integration \
-  -DdefaultProjectId="lofty-root-378503" \
+  -DdefaultProjectId=$GCP_PROJECT_ID \
   -DdefaultDataset="test_dataset_integration" \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
 ```
 
 </details>
 
 
 <details>
-<summary>Create a table with the configured default schema</summary>
+<summary>Delete a dataset</summary>
+
+```shell
+./mvnw \
+  -Dtest=BigQueryAdminClientIntegrationTest#deleteDataset \
+  test -P integration \
+  -DdefaultProjectId=$GCP_PROJECT_ID \
+  -DdefaultDataset="test_dataset_integration" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
+```
+
+</details>
+
+
+<details>
+<summary>Create a table with the configured default schemaDefault</summary>
 
 ```shell
 ./mvnw \
@@ -132,7 +154,8 @@ Example:
   -DdefaultProjectId="DEFAULT_PROJECT_ID" \
   -DdefaultDataset="DEFAULT_DATASET" \
   -DdefaultTable="DEFAULT_TABLE" \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
 ```
 
 **Replace the following**:
@@ -147,10 +170,11 @@ Example using the `integration` profile:
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#createTableWithDefaultSchema \
   test -P integration \
-  -DdefaultProjectId="lofty-root-378503" \
+  -DdefaultProjectId=$GCP_PROJECT_ID \
   -DdefaultDataset="test_dataset_integration" \
   -DdefaultTable="test_table_integration_default" \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
 ```
 
 </details>
@@ -167,7 +191,8 @@ Example using the `integration` profile:
   -DdefaultDataset="DEFAULT_DATASET" \
   -DdefaultTable="DEFAULT_TABLE" \
   -Dschema="name_1:datatype_1,name_2:datatype_2,[...],name_n:datatype_n" \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
 ```
 
 **Replace the following**:
@@ -182,11 +207,29 @@ Example using the `integration` profile:
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#createTableWithCustomSchema \
   test -P integration \
-  -DdefaultProjectId="lofty-root-378503" \
+  -DdefaultProjectId=$GCP_PROJECT_ID \
   -DdefaultDataset="test_dataset_integration" \
   -DdefaultTable="test_table_integration_custom" \
   -Dschema="id:STRING,client_name:STRING,active:BOOL,creation_timestamp:DATETIME,last_update_timestamp:DATETIME" \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
+```
+
+</details>
+
+
+<details>
+<summary>Delete a table</summary>
+
+```shell
+./mvnw \
+  -Dtest=BigQueryAdminClientIntegrationTest#deleteTable \
+  test -P integration \
+  -DdefaultProjectId=$GCP_PROJECT_ID \
+  -DdefaultDataset="test_dataset_integration" \
+  -DdefaultTable="test_table_integration_default" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
 ```
 
 </details>

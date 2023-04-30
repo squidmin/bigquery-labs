@@ -123,7 +123,11 @@ Read <a href="https://maven.apache.org/install.html">here</a> for more informati
 <summary>Build a JAR</summary>
 
 ```shell
-mvn clean package
+./mvnw clean package -P integration \
+  -DdefaultProjectId=$GCP_PROJECT_ID \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
+  -DGCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN
 ```
 
 </details>
@@ -147,7 +151,30 @@ docker build \
 ## Run the application
 
 
-### 1. Prepare the container environment
+### 1a. Prepare the host machine environment
+
+<details>
+<summary>Expand</summary>
+
+Until the main application entrypoint is developed, run the application's functionality via the `mvn test` interface.
+
+Pass required environment variables on your local system to the VM options, as shown in the `createTableWithCustomSchema` example below:
+
+```shell
+./mvnw \
+  -Dtest=BigQueryAdminClientIntegrationTest#createTableWithCustomSchema \
+  test -P integration \
+  -DdefaultProjectId="lofty-root-378503" \
+  -DdefaultDataset="test_dataset_integration" \
+  -DdefaultTable="test_table_integration_custom" \
+  -Dschema="id:STRING,client_name:STRING,active:BOOL,creation_timestamp:DATETIME,last_update_timestamp:DATETIME" \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+```
+
+</details>
+
+
+### 1b. Prepare the container environment
 
 <details>
 <summary>Expand</summary>
@@ -408,19 +435,19 @@ bq rm -r -f -d lofty-root-378503:test_dataset_name_lofty
 
 
 <details>
-<summary>Create a table with a configured schema</summary>
+<summary>Create a table with a configured schemaDefault</summary>
 
-**Create an empty table with an inline schema definition**
+**Create an empty table with an inline schemaDefault definition**
 
 ```shell
-bq mk --table project_id:dataset.table schema
+bq mk --table project_id:dataset.table schemaDefault
 ```
 
 **Replace the following**:
 - `project_id`: the name of the GCP project to target.
 - `dataset`: the name of the BigQuery dataset to target.
 - `table`: the name of the BigQuery table to target.
-- `schema`: an inline schema definition.
+- `schemaDefault`: an inline schemaDefault definition.
 
 Example:
 
@@ -430,9 +457,9 @@ bq mk --table \
   id:STRING,fieldA:STRING,fieldB:STRING,fieldC:STRING,fieldD:STRING
 ```
 
-### Specify the schema in a JSON schema file
+### Specify the schemaDefault in a JSON schemaDefault file
 
-For an example JSON schema file, refer to: `/schema/example.json`.
+For an example JSON schemaDefault file, refer to: `/schemaDefault/example.json`.
 
 **Create an empty table**
 
@@ -447,7 +474,7 @@ Example:
 ```shell
 bq mk --table \
   lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
-  ./schema/example.json
+  ./schemaDefault/example.json
 ```
 
 **Create a table with CSV data**
@@ -467,7 +494,7 @@ bq --location=us load \
   --source_format=CSV \
   lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
   ./csv/example.csv \
-  ./schema/example.json
+  ./schemaDefault/example.json
 ```
 
 Refer to the BigQuery documentation: <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#details_of_loading_csv_data">Details of loading CSV data</a>.
@@ -486,24 +513,24 @@ bq rm --table test_dataset_name_lofty.test_table_name_lofty
 
 
 <details>
-<summary>Show table schema</summary>
+<summary>Show table schemaDefault</summary>
 
 Example:
 
 ```shell
 bq show \
-  --schema \
+  --schemaDefault \
   --format=prettyjson \
   lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty
 ```
 
-The table schema can be written to a file:
+The table schemaDefault can be written to a file:
 
 ```shell
 bq show \
-  --schema \
+  --schemaDefault \
   --format=prettyjson \
-  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \ > ./schema/example_show-write.json
+  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \ > ./schemaDefault/example_show-write.json
 ```
 
 </details>
@@ -515,7 +542,7 @@ bq show \
 ```shell
 bq update \
   lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
-  ./schema/example_update.json
+  ./schemaDefault/example_update.json
 ```
 
 Refer to the <a href="https://cloud.google.com/bigquery/docs/managing-table-schemas">GCP documentation on modifying table schemas.</a>.

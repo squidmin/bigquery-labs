@@ -6,8 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-
-import java.io.IOException;
+import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
+import org.squidmin.bigquery.config.tables.sandbox.SelectFieldsDefault;
+import org.squidmin.bigquery.config.tables.sandbox.WhereFieldsDefault;
 
 @Configuration
 @Profile("integration")
@@ -33,10 +34,16 @@ public class IntegrationTestConfig {
     private String saTable;
 
     @Autowired
-    private Schema schema;
+    private SchemaDefault schemaDefault;
 
     @Autowired
     private DataTypes dataTypes;
+
+    @Autowired
+    private SelectFieldsDefault selectFieldsDefault;
+
+    @Autowired
+    private WhereFieldsDefault whereFieldsDefault;
 
     private BigQueryConfig bqConfig;
 
@@ -59,7 +66,7 @@ public class IntegrationTestConfig {
     public String saTable() { return saTable; }
 
     @Bean
-    public Schema schema() { return schema; }
+    public SchemaDefault schema() { return schemaDefault; }
 
     @Bean
     public DataTypes dataTypes() {
@@ -67,7 +74,13 @@ public class IntegrationTestConfig {
     }
 
     @Bean
-    public BigQueryConfig bigQueryConfig() throws IOException {
+    public SelectFieldsDefault selectFields() { return selectFieldsDefault; }
+
+    @Bean
+    public WhereFieldsDefault whereFields() { return whereFieldsDefault; }
+
+    @Bean
+    public BigQueryConfig bigQueryConfig() {
         bqConfig = new BigQueryConfig(
             defaultProjectId,
             defaultDataset,
@@ -75,8 +88,10 @@ public class IntegrationTestConfig {
             saProjectId,
             saDataset,
             saTable,
-            schema,
-            dataTypes
+            schemaDefault,
+            dataTypes,
+            selectFieldsDefault,
+            whereFieldsDefault
         );
         return bqConfig;
     }

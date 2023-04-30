@@ -1,9 +1,12 @@
 #!/bin/bash
 
 # Globals.
+DEFAULT_GCP_PROJECT_ID=lofty-root-378503
 LOCAL_GCLOUD_AUTH_DIRECTORY=$HOME/.config/gcloud
 CONTAINER_GCLOUD_AUTH_DIRECTORY=/root/.config/gcloud
 GCLOUD_SA_KEY_FILENAME=sa-private-key.json
+LOCAL_MAVEN_REPOSITORY=$HOME/.m2
+CONTAINER_MAVEN_REPOSITORY=/root/.m2
 
 POSITIONAL_ARGS=()
 
@@ -39,6 +42,11 @@ while [[ $# -gt 0 ]]; do
     --default)
       DEFAULT=YES
       echo "Building and running the application with default settings."
+      if [ -z "$GCP_PROJECT_ID" ]
+      then
+        echo "GCP_PROJECT_ID not set. Using default: ${DEFAULT_GCP_PROJECT_ID}."
+        GCP_PROJECT_ID=$DEFAULT_GCP_PROJECT_ID
+      fi
       GOOGLE_APPLICATION_CREDENTIALS=${LOCAL_GCLOUD_AUTH_DIRECTORY}/${GCLOUD_SA_KEY_FILENAME}
       GCP_ADC_ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
       GCP_SA_ACCESS_TOKEN=sa_access_token_placeholder
@@ -52,6 +60,7 @@ while [[ $# -gt 0 ]]; do
     -nci|--no-container-instance)
       CONTAINER_INSTANCE=NO
       GOOGLE_APPLICATION_CREDENTIALS=${LOCAL_GCLOUD_AUTH_DIRECTORY}/${GCLOUD_SA_KEY_FILENAME}
+      shift # past argument
       ;;
     -*|--*)
       echo "Unknown option $1"
@@ -85,7 +94,11 @@ chmod +x ./bash/build_jar.sh
 chmod +x ./bash/build_image.sh
 chmod +x ./bash/run_container.sh
 
-./mvnw clean package
+./mvnw clean package -P integration \
+  -DdefaultProjectId=$GCP_PROJECT_ID \
+  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
+  -DGCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN
 
 if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]
 then
@@ -93,8 +106,9 @@ then
   GOOGLE_APPLICATION_CREDENTIALS=""
 fi
 
-if [ -z "$CONTAINER_INSTANCE" ] || [ "$CONTAINER_INSTANCE" != "YES" ]
+if [ -z "$CONTAINER_INSTANCE" ] || [ "$CONTAINER_INSTANCE" != "YES" ] || [ "$CONTAINER_INSTANCE" == "NO" ]
 then
+  echo "Running JAR on host system."
   echo "TODO: Run application with no container instance."
 else
   if [ "$CONTAINER_INSTANCE" == "YES" ]
@@ -106,13 +120,14 @@ else
 
     echo "Starting container instance."
     docker run --rm -it \
+      -e GCP_PROJECT_ID=$GCP_PROJECT_ID \
       -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
-      -e GCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN \
       -e GCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
+      -e GCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN \
       -v ${LOCAL_GCLOUD_AUTH_DIRECTORY}:${CONTAINER_GCLOUD_AUTH_DIRECTORY} \
-      -v $HOME/.m2:/root/.m2 \
+      -v ${LOCAL_MAVEN_REPOSITORY}:${CONTAINER_MAVEN_REPOSITORY} \
       bigquery-labs
   else
-    echo "Something went wrong."
+    echo "Invalid run configuration. Please review parameters and options passed to the 'run.sh' script."
   fi
 fi

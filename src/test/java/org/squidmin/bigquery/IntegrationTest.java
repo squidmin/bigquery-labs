@@ -9,6 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.squidmin.bigquery.config.BigQueryConfig;
 import org.squidmin.bigquery.config.IntegrationTestConfig;
+import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
 import org.squidmin.bigquery.fixture.BigQueryTestFixture;
 import org.squidmin.bigquery.service.BigQueryAdminClient;
 import org.squidmin.bigquery.util.RunEnvironment;
@@ -34,7 +35,7 @@ public abstract class IntegrationTest {
         saProjectIdCliOverride, saDatasetCliOverride, saTableCliOverride,
         schemaOverrideString;
 
-    protected org.squidmin.bigquery.config.Schema schemaDefault;
+    protected SchemaDefault schemaDefault;
     protected com.google.cloud.bigquery.Schema _schemaOverride;
 
     // The default values of configured BigQuery resource properties can be overridden by the values of CLI arguments.
@@ -69,7 +70,7 @@ public abstract class IntegrationTest {
         saDatasetDefault = bqConfig.getSaDataset();
         saTableDefault = bqConfig.getSaTable();
 
-        schemaDefault = bqConfig.getSchema();
+        schemaDefault = bqConfig.getSchemaDefault();
 
         // Set default run environment properties from Spring @Configuration classes.
         runEnvironment = RunEnvironment.builder()
@@ -79,7 +80,7 @@ public abstract class IntegrationTest {
             .saProjectId(bqConfig.getSaProjectId())
             .saDataset(bqConfig.getSaDataset())
             .saTable(bqConfig.getSaTable())
-            .schema(BigQueryUtil.InlineSchemaTranslator.translate(bqConfig.getSchema(), bqConfig.getDataTypes()))
+            .schema(BigQueryUtil.InlineSchemaTranslator.translate(bqConfig.getSchemaDefault(), bqConfig.getDataTypes()))
             .build();
     }
 

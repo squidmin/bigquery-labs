@@ -152,6 +152,8 @@ docker build \
 <details>
 <summary>Expand</summary>
 
+### Environment variables
+
 The `GOOGLE_APPLICATION_CREDENTIALS` environment variable is used to store the path to the user's service account key file.
 The user's service account key file is mapped to the `/root/.config/gcloud` directory on the container instance.
 
@@ -159,20 +161,16 @@ The user's service account key file is mapped to the `/root/.config/gcloud` dire
 export GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/sa-private-key.json
 ```
 
-```shell
-export GOOGLE_APPLICATION_CREDENTIALS=$(gcloud auth application-default print-access-token)
-```
-
-The `GCP_ACCESS_TOKEN` environment variable is used to store an OAuth2 access token for reaching BigQuery RESTful services _as a specific service account_.
-
-```shell
-export GCP_SA_ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
-```
-
 The `ADC_ACCESS_TOKEN` environment variable is used to store an OAuth2 access token for reaching BigQuery RESTful services _using Application Default Credentials_.
 
 ```shell
 export GCP_ADC_ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
+```
+
+The `GCP_SA_ACCESS_TOKEN` environment variable is used to store an OAuth2 access token for reaching BigQuery RESTful services _as a specific service account_.
+
+```shell
+export GCP_SA_ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
 ```
 
 ### Utility script (WIP)
@@ -201,7 +199,9 @@ docker run --rm -it \
   bigquery-labs
 ```
 
-### Utility script
+---
+
+### `./run.sh` utility script
 
 ```shell
 ./run.sh \
@@ -219,32 +219,87 @@ Or use long arguments:
   --GOOGLE_APPLICATION_CREDENTIALS $HOME/.config/gcloud/sa-private-key.json \
   --GCP_SA_ACCESS_TOKEN access_token_placeholder \
   --GCP_ADC_ACCESS_TOKEN $(gcloud auth application-default print-access-token)
-  
 ```
 
-The `run.sh` script implements the following options:
-- `--default`: Start the application on the user's host system with default run environment settings.
+### `run.sh` options
 
-    ```shell
-    ./run.sh --default
-    ```
+<details>
+<summary>Expand</summary>
+
+`run.sh` implements the following options:
+
+- `--default`: Start the application on the user's host system with default run environment settings.<br>
+
+  <details>
+  <summary>Example</summary>
+
+  ```shell
+  ./run.sh --default
+  ```
+
+  </details>
 
 - `-ci`, `--container-instance`: Run a container instance pointing to the root directory of the application.
-- `-nci`, `--no-container-instance`: Build and run the application without starting a container instance.
-- `-i SA_EMAIL_ADDRESS`, `--impersonate SA_EMAIL_ADDRESS`: Impersonate a GCP service account. Replace `SA_EMAIL_ADDRESS` with the email address of the service account to impersonate.
 
-When specifying both the `--default` and `--container-instance` options, a container instance will start with default run environment settings. 
+  <details>
+  <summary>Example</summary>
+
+  ```shell
+  ./run.sh --container-instance
+  ```
+
+  </details>
+
+- `-nci`, `--no-container-instance`: Build and run the application without starting a container instance.
+
+  <details>
+  <summary>Example</summary>
+
+  ```shell
+  ./run.sh -nci
+  ```
+
+  </details>
+
+- `-i SA_EMAIL_ADDRESS`, `--impersonate SA_EMAIL_ADDRESS`: Impersonate a GCP service account.
+
+  Replace `SA_EMAIL_ADDRESS` with the email address of the service account to impersonate.
+
+  <details>
+  <summary>Example</summary>
+
+  ```shell
+  ./run.sh --default -ci --impersonate-service-account SA_EMAIL_ADDRESS
+  ```
+
+  **Replace the following**:
+  - `SA_EMAIL_ADDRESS`: the impersonated service account's email address.
+
+  </details>
+
+When specifying both the `--default` and `--container-instance` options, a container instance will start with default run environment settings.
+
+<details>
+<summary>Example</summary>
+
+```shell
+./run.sh --default --container-instance
+```
+
+</details>
+
+</details>
 
 </details>
 
 
 ### 3. Run the JAR
 
-> Note: This section is for testing the main application entrypoint only.
+> Note: This section currently is only used for testing the main application entrypoint.
 >
 > This project currently invokes the BigQuery Java SDK (and later the BigQuery RESTful services) via the `mvn test` interface. Use that for now.
 > 
-> Refer to: <a href="export GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/sa-private-key.json">`/tests` README.md</a>.
+> _**Refer to**_: <a href="export GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/sa-private-key.json">`/src/test` README.md</a>.
 
 <details>
 <summary>Using "exec java" command. Specify a profile.</summary>

@@ -81,7 +81,7 @@ public class BigQueryAdminClient {
     }
 
     public boolean createTable(String dataset, String table) {
-        return createTable(dataset, table, BigQueryUtil.translate(bqConfig.getSchema()));
+        return createTable(dataset, table, BigQueryUtil.InlineSchemaTranslator.translate(bqConfig.getSchema(), bqConfig.getDataTypes()));
     }
 
     public boolean createTable(String dataset, String table, com.google.cloud.bigquery.Schema schema) {

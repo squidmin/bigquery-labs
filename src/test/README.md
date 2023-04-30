@@ -166,7 +166,7 @@ Example using the `integration` profile:
   -DdefaultProjectId="DEFAULT_PROJECT_ID" \
   -DdefaultDataset="DEFAULT_DATASET" \
   -DdefaultTable="DEFAULT_TABLE" \
-  -Dschema="name_1,datatype_1;name_2,datatype_2;[...];name_n,datatype_n" \
+  -Dschema="name_1:datatype_1,name_2:datatype_2,[...],name_n:datatype_n" \
   -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
 ```
 
@@ -185,7 +185,7 @@ Example using the `integration` profile:
   -DdefaultProjectId="lofty-root-378503" \
   -DdefaultDataset="test_dataset_integration" \
   -DdefaultTable="test_table_integration_custom" \
-  -Dschema="id,string;client_name,string;active,bool;creation_timestamp,datetime;last_update_timestamp,datetime" \
+  -Dschema="id:STRING,client_name:STRING,active:BOOL,creation_timestamp:DATETIME,last_update_timestamp:DATETIME" \
   -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
 ```
 

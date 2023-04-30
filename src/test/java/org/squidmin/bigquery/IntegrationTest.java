@@ -14,6 +14,7 @@ import org.squidmin.bigquery.service.BigQueryAdminClient;
 import org.squidmin.bigquery.util.RunEnvironment;
 import org.squidmin.bigquery.util.BigQueryUtil;
 import org.squidmin.bigquery.logger.Logger;
+import org.squidmin.bigquery.util.StringUtils;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {BigQueryAdminClient.class, IntegrationTestConfig.class})
@@ -78,7 +79,7 @@ public abstract class IntegrationTest {
             .saProjectId(bqConfig.getSaProjectId())
             .saDataset(bqConfig.getSaDataset())
             .saTable(bqConfig.getSaTable())
-            .schema(BigQueryUtil.translate(bqConfig.getSchema()))
+            .schema(BigQueryUtil.InlineSchemaTranslator.translate(bqConfig.getSchema(), bqConfig.getDataTypes()))
             .build();
     }
 
@@ -92,8 +93,8 @@ public abstract class IntegrationTest {
         saTableCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.saTable.name());
 
         schemaOverrideString = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.schema.name());
-        if (isNotEmpty(schemaOverrideString)) {
-            _schemaOverride = BigQueryUtil.translate(schemaOverrideString);
+        if (StringUtils.isNotEmpty(schemaOverrideString)) {
+            _schemaOverride = BigQueryUtil.InlineSchemaTranslator.translate(schemaOverrideString, bqConfig.getDataTypes());
         }
     }
 
@@ -118,9 +119,9 @@ public abstract class IntegrationTest {
 
         // Set table schema in the run environment.
         runEnvironment.setSchema(
-            isNotEmpty(schemaOverrideString) ?
+            StringUtils.isNotEmpty(schemaOverrideString) ?
                 _schemaOverride :
-                BigQueryUtil.translate(schemaDefault)
+                BigQueryUtil.InlineSchemaTranslator.translate(schemaDefault, bqConfig.getDataTypes())
         );
     }
 
@@ -140,7 +141,5 @@ public abstract class IntegrationTest {
     private String setBqResourceProperty(String defaultValue, String overrideValue) {
         return null != overrideValue ? overrideValue : defaultValue;
     }
-
-    private boolean isNotEmpty(String str) { return null != str && 0 != str.length(); }
 
 }

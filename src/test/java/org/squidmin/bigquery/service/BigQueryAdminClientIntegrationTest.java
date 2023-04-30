@@ -38,7 +38,7 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
             bigQueryAdminClient.createTable(
                 DEFAULT_DATASET,
                 DEFAULT_TABLE,
-                BigQueryUtil.translate(schemaOverrideString)
+                BigQueryUtil.InlineSchemaTranslator.translate(schemaOverrideString, bqConfig.getDataTypes())
             )
         );
     }

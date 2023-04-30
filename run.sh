@@ -77,8 +77,8 @@ echo "DEFAULT                         = ${DEFAULT}"
 echo "CONTAINER_INSTANCE              = ${CONTAINER_INSTANCE}"
 
 if [[ -n $1 ]]; then
-    echo "Last line of file specified as non-opt/last argument:"
-    tail -1 "$1"
+  echo "Last line of file specified as non-opt/last argument:"
+  tail -1 "$1"
 fi
 
 chmod +x ./bash/build_jar.sh

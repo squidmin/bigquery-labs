@@ -50,17 +50,30 @@ public abstract class IntegrationTest {
     public void before() {
         initialize();
         bigQueryAdminClient = new BigQueryAdminClient(bqConfig);
-        Logger.log(String.format("Active profile ID: %s", System.getProperty("profileId")), Logger.LogType.CYAN);
+        Logger.echoHorizontalLine(Logger.LogType.CYAN);
+        Logger.log("Run environment CLI arguments", Logger.LogType.CYAN);
+        Logger.echoHorizontalLine(Logger.LogType.CYAN);
+        Logger.log(String.format("PROFILE                         %s", System.getProperty("PROFILE")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_SA_KEY_PATH                 %s", System.getProperty("GCP_SA_KEY_PATH")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_ADC_ACCESS_TOKEN            %s", System.getProperty("GCP_ADC_ACCESS_TOKEN")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_SA_ACCESS_TOKEN             %s", System.getProperty("GCP_SA_ACCESS_TOKEN")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_DEFAULT_USER_PROJECT_ID     %s", System.getProperty("GCP_DEFAULT_USER_PROJECT_ID")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_DEFAULT_USER_DATASET        %s", System.getProperty("GCP_DEFAULT_USER_DATASET")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_DEFAULT_USER_TABLE          %s", System.getProperty("GCP_DEFAULT_USER_TABLE")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_SA_PROJECT_ID               %s", System.getProperty("GCP_SA_PROJECT_ID")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_SA_DATASET                  %s", System.getProperty("GCP_SA_DATASET")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_SA_TABLE                    %s", System.getProperty("GCP_SA_TABLE")), Logger.LogType.CYAN);
+        Logger.echoHorizontalLine(Logger.LogType.CYAN);
     }
 
     private void initialize() {
-        initBqResourcePropertyDefaultValues();
-        initBqResourcePropertyOverriddenValues();
-        initBqResourcePropertyMetadata();
-        initBqResourceActiveProperties();
+        initRunEnvironmentDefaultValues();
+        initRunEnvironmentOverriddenValues();
+        initRunEnvironmentMetadata();
+        initRunEnvironmentActiveProperties();
     }
 
-    private void initBqResourcePropertyDefaultValues() {
+    private void initRunEnvironmentDefaultValues() {
         // Class-level initializers.
         defaultProjectIdDefault = bqConfig.getDefaultProjectId();
         defaultDatasetDefault = bqConfig.getDefaultDataset();
@@ -84,22 +97,22 @@ public abstract class IntegrationTest {
             .build();
     }
 
-    private void initBqResourcePropertyOverriddenValues() {
-        defaultProjectIdCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.defaultProjectId.name());
-        defaultDatasetCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.defaultDataset.name());
-        defaultTableCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.defaultTable.name());
+    private void initRunEnvironmentOverriddenValues() {
+        defaultProjectIdCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.GCP_DEFAULT_USER_PROJECT_ID.name());
+        defaultDatasetCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.GCP_DEFAULT_USER_DATASET.name());
+        defaultTableCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.GCP_DEFAULT_USER_TABLE.name());
 
-        saProjectIdCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.saProjectId.name());
-        saDatasetCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.saDataset.name());
-        saTableCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.saTable.name());
+        saProjectIdCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.GCP_SA_PROJECT_ID.name());
+        saDatasetCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.GCP_SA_DATASET.name());
+        saTableCliOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.GCP_SA_TABLE.name());
 
-        schemaOverrideString = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.schema.name());
+        schemaOverrideString = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.SCHEMA.name());
         if (StringUtils.isNotEmpty(schemaOverrideString)) {
             _schemaOverride = BigQueryUtil.InlineSchemaTranslator.translate(schemaOverrideString, bqConfig.getDataTypes());
         }
     }
 
-    private void initBqResourcePropertyMetadata() {
+    private void initRunEnvironmentMetadata() {
         // Run environment defaults.
         runEnvironment.setDefaultProjectIdDefault(defaultProjectIdDefault);
         runEnvironment.setDefaultDatasetDefault(defaultDatasetDefault);
@@ -126,7 +139,7 @@ public abstract class IntegrationTest {
         );
     }
 
-    private void initBqResourceActiveProperties() {
+    private void initRunEnvironmentActiveProperties() {
         // Set integration test class level variables for active run environment.
         DEFAULT_PROJECT_ID = runEnvironment.getDefaultProjectId();
         DEFAULT_DATASET = runEnvironment.getDefaultDataset();

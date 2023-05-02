@@ -1,13 +1,10 @@
 package org.squidmin.bigquery.fixture;
 
 import org.squidmin.bigquery.dao.RecordExample;
-import org.squidmin.bigquery.logger.LogFont;
-import org.squidmin.bigquery.logger.Logger;
 import org.squidmin.bigquery.util.RunEnvironment;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -19,9 +16,9 @@ import java.util.stream.IntStream;
 public class BigQueryTestFixture {
 
     public enum CLI_ARG_KEYS {
-        defaultProjectId, defaultDataset, defaultTable,
-        saProjectId, saDataset, saTable,
-        schema
+        GCP_DEFAULT_USER_PROJECT_ID, GCP_DEFAULT_USER_DATASET, GCP_DEFAULT_USER_TABLE,
+        GCP_SA_PROJECT_ID, GCP_SA_DATASET, GCP_SA_TABLE,
+        SCHEMA
     }
 
     public static abstract class QUERIES {
@@ -42,7 +39,6 @@ public class BigQueryTestFixture {
                 now.getHour(), now.getMinute(), now.getSecond()
             ).minusDays(3).format(DateTimeFormatter.ISO_DATE_TIME);
             String lastUpdateTimestamp = LocalDateTime.ofInstant(
-//                Instant.ofEpochMilli(System.currentTimeMillis()),
                 Instant.ofEpochSecond(now.toEpochSecond(ZoneOffset.UTC)),
                 TimeZone.getDefault().toZoneId()
             ).format(DateTimeFormatter.ISO_DATE_TIME);

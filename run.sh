@@ -12,13 +12,13 @@ POSITIONAL_ARGS=()
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    -gcppid|--GCP_PROJECT_ID)
-      GCP_PROJECT_ID="$2"
+    -dpid|--GCP_DEFAULT_USER_PROJECT_ID)
+      GCP_DEFAULT_USER_PROJECT_ID="$2"
       shift; # past argument
       shift; # past value
       ;;
-    -gac|--GOOGLE_APPLICATION_CREDENTIALS)
-      GOOGLE_APPLICATION_CREDENTIALS="$2"
+    -sakp|--GCP_SA_KEY_PATH)
+      GCP_SA_KEY_PATH="$2"
       shift # past argument
       shift # past value
       ;;
@@ -42,24 +42,24 @@ while [[ $# -gt 0 ]]; do
     --default)
       DEFAULT=YES
       echo "Building and running the application with default settings."
-      if [ -z "$GCP_PROJECT_ID" ]
+      if [ -z "$GCP_DEFAULT_USER_PROJECT_ID" ]
       then
-        echo "GCP_PROJECT_ID not set. Using default: ${DEFAULT_GCP_PROJECT_ID}."
-        GCP_PROJECT_ID=$DEFAULT_GCP_PROJECT_ID
+        echo "GCP_DEFAULT_USER_PROJECT_ID not set. Using default: ${DEFAULT_GCP_PROJECT_ID}."
+        GCP_DEFAULT_USER_PROJECT_ID=$DEFAULT_GCP_PROJECT_ID
       fi
-      GOOGLE_APPLICATION_CREDENTIALS=${LOCAL_GCLOUD_AUTH_DIRECTORY}/${GCLOUD_SA_KEY_FILENAME}
+      GCP_SA_KEY_PATH=${LOCAL_GCLOUD_AUTH_DIRECTORY}/${GCLOUD_SA_KEY_FILENAME}
       GCP_ADC_ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
       GCP_SA_ACCESS_TOKEN=sa_access_token_placeholder
       shift # past argument
       ;;
     -ci|--container-instance)
       CONTAINER_INSTANCE=YES
-      GOOGLE_APPLICATION_CREDENTIALS=${CONTAINER_GCLOUD_AUTH_DIRECTORY}/${GCLOUD_SA_KEY_FILENAME}
+      GCP_SA_KEY_PATH=${CONTAINER_GCLOUD_AUTH_DIRECTORY}/${GCLOUD_SA_KEY_FILENAME}
       shift # past argument
       ;;
     -nci|--no-container-instance)
       CONTAINER_INSTANCE=NO
-      GOOGLE_APPLICATION_CREDENTIALS=${LOCAL_GCLOUD_AUTH_DIRECTORY}/${GCLOUD_SA_KEY_FILENAME}
+      GCP_SA_KEY_PATH=${LOCAL_GCLOUD_AUTH_DIRECTORY}/${GCLOUD_SA_KEY_FILENAME}
       shift # past argument
       ;;
     -*|--*)
@@ -75,10 +75,10 @@ done
 
 set -- "${POSITIONAL_ARGS[@]}" # Restore CLI positional parameters.
 
-echo "GCP_PROJECT_ID                  = ${GCP_PROJECT_ID}"
+echo "GCP_DEFAULT_USER_PROJECT_ID     = ${GCP_DEFAULT_USER_PROJECT_ID}"
 echo "LOCAL_GCLOUD_AUTH_DIRECTORY     = ${LOCAL_GCLOUD_AUTH_DIRECTORY}"
 echo "GCLOUD_SA_KEY_FILENAME          = ${GCLOUD_SA_KEY_FILENAME}"
-echo "GOOGLE_APPLICATION_CREDENTIALS  = ${GOOGLE_APPLICATION_CREDENTIALS}"
+echo "GCP_SA_KEY_PATH                 = ${GCP_SA_KEY_PATH}"
 echo "GCP_ADC_ACCESS_TOKEN            = ${GCP_ADC_ACCESS_TOKEN}"
 echo "GCP_SA_ACCESS_TOKEN             = ${GCP_SA_ACCESS_TOKEN}"
 echo "IMPERSONATED_SERVICE_ACCOUNT    = ${IMPERSONATED_SERVICE_ACCOUNT}"
@@ -95,15 +95,15 @@ chmod +x ./bash/build_image.sh
 chmod +x ./bash/run_container.sh
 
 ./mvnw clean package -P integration \
-  -DdefaultProjectId=$GCP_PROJECT_ID \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -GCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
+  -DGCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
   -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
   -DGCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN
 
-if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]
+if [ -z "$GCP_SA_KEY_PATH" ]
 then
-  echo "GOOGLE_APPLICATION_CREDENTIALS not set. Will attempt GCP authentication with Application Default Credentials (ADC) access token."
-  GOOGLE_APPLICATION_CREDENTIALS=""
+  echo "GCP_SA_KEY_PATH not set. Will attempt GCP authentication with Application Default Credentials (ADC) access token."
+  GCP_SA_KEY_PATH=""
 fi
 
 if [ -z "$CONTAINER_INSTANCE" ] || [ "$CONTAINER_INSTANCE" != "YES" ] || [ "$CONTAINER_INSTANCE" == "NO" ]
@@ -115,13 +115,13 @@ else
   then
     echo "Building container image."
     docker build \
-      --build-arg GCP_PROJECT_ID=$GCP_PROJECT_ID \
+      --build-arg GCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
       -t bigquery-labs .
 
     echo "Starting container instance."
     docker run --rm -it \
-      -e GCP_PROJECT_ID=$GCP_PROJECT_ID \
-      -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+      -e GCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
+      -e GCP_SA_KEY_PATH=GCP_SA_KEY_PATH \
       -e GCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
       -e GCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN \
       -v ${LOCAL_GCLOUD_AUTH_DIRECTORY}:${CONTAINER_GCLOUD_AUTH_DIRECTORY} \

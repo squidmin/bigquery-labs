@@ -35,7 +35,7 @@ gcloud init
 If you're running the application locally, you can use the following command to generate an access token:
 
 ```shell
-export GOOGLE_APPLICATION_CREDENTIALS="$(gcloud auth application-default print-access-token)"
+export GCP_ADC_ACCESS_TOKEN="$(gcloud auth application-default print-access-token)"
 ```
 
 </details>
@@ -47,7 +47,7 @@ export GOOGLE_APPLICATION_CREDENTIALS="$(gcloud auth application-default print-a
 Run this command to generate an access token for a specific GCP service account:
 
 ```shell
-export GOOGLE_APPLICATION_CREDENTIALS=$(gcloud auth print-access-token --impersonate-service-account='SA_EMAIL_ADDRESS')
+export GCP_SA_ACCESS_TOKEN=$(gcloud auth print-access-token --impersonate-service-account='SA_EMAIL_ADDRESS')
 ```
 
 **Replace the following**:
@@ -56,7 +56,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=$(gcloud auth print-access-token --imperso
 Example:
 
 ```shell
-export GOOGLE_APPLICATION_CREDENTIALS=$(gcloud auth print-access-token --impersonate-service-account='9644524330-compute@developer.gserviceaccount.com')
+export GCP_SA_ACCESS_TOKEN=$(gcloud auth print-access-token --impersonate-service-account='9644524330-compute@developer.gserviceaccount.com')
 ```
 
 </details>
@@ -84,15 +84,16 @@ the command to run the container instance would be:
 ```shell
 docker run \
   --rm -it \
-  -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -e GCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
+  -e GCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
   -v $HOME/.config/gcloud:/root/.config/gcloud \
   -v $HOME/.m2:/root/.m2 \
   biquery-labs
 ```
 
-**Replace the following**:
+**Replace the following** in the path to the `gcloud` directory:
 
-- `USERNAME`: the current user's username
+- `USERNAME`: the current OS user's username
 
 so that the path to the service account key file is correct, e.g.:
 
@@ -125,7 +126,7 @@ Read <a href="https://maven.apache.org/install.html">here</a> for more informati
 ```shell
 ./mvnw clean package -P integration \
   -DdefaultProjectId=$GCP_PROJECT_ID \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
   -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
   -DGCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN
 ```
@@ -164,11 +165,12 @@ Pass required environment variables on your local system to the VM options, as s
 ./mvnw \
   -Dtest=BigQueryAdminClientIntegrationTest#createTableWithCustomSchema \
   test -P integration \
+  -DGCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
   -DdefaultProjectId="lofty-root-378503" \
   -DdefaultDataset="test_dataset_integration" \
   -DdefaultTable="test_table_integration_custom" \
   -Dschema="id:STRING,client_name:STRING,active:BOOL,creation_timestamp:DATETIME,last_update_timestamp:DATETIME" \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
 ```
 
 </details>
@@ -181,14 +183,14 @@ Pass required environment variables on your local system to the VM options, as s
 
 ### Environment variables
 
-The `GOOGLE_APPLICATION_CREDENTIALS` environment variable is used to store the path to the user's service account key file.
+The `GCP_SA_KEY_PATH` environment variable is used to store the path to the user's GCP service account key file.
 The user's service account key file is mapped to the `/root/.config/gcloud` directory on the container instance.
 
 ```shell
-export GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/sa-private-key.json
+export GCP_SA_KEY_PATH=/root/.config/gcloud/sa-private-key.json
 ```
 
-The `ADC_ACCESS_TOKEN` environment variable is used to store an OAuth2 access token for reaching BigQuery RESTful services _using Application Default Credentials_.
+The `GCP_ADC_ACCESS_TOKEN` environment variable is used to store an OAuth2 access token for reaching BigQuery RESTful services _using Application Default Credentials_ (ADC).
 
 ```shell
 export GCP_ADC_ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
@@ -218,9 +220,10 @@ It accepts short and long arguments for each environment variable.
 
 ```shell
 docker run --rm -it \
-  -e GOOGLE_APPLICATION_CREDENTIALS=lofty-root-378503 \
+  -e GCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
+  -e GCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
   -e GCP_SA_ACCESS_TOKEN=access_token_placeholder \
-  -e ADC_ACCESS_TOKEN=$(gcloud auth application-default print-access-token) \
+  -e GCP_ADC_ACCESS_TOKEN=$(gcloud auth application-default print-access-token) \
   -v $HOME/.config/gcloud:/root/.config/gcloud \
   -v $HOME/.m2:/root/.m2 \
   bigquery-labs
@@ -232,8 +235,8 @@ docker run --rm -it \
 
 ```shell
 ./run.sh \
-  -gcppid lofty-root-378503 \
-  -gac $HOME/.config/gcloud/sa-private-key.json \
+  -dpid $GCP_DEFAULT_USER_PROJECT_ID \
+  -sakp $HOME/.config/gcloud/sa-private-key.json \
   -saat access_token_placeholder \
   -adcat $(gcloud auth application-default print-access-token)
 ```
@@ -242,8 +245,8 @@ Or use long arguments:
 
 ```shell
 ./run.sh \
-  --GCP_PROJECT_ID lofty-root-378503 \
-  --GOOGLE_APPLICATION_CREDENTIALS $HOME/.config/gcloud/sa-private-key.json \
+  --GCP_PROJECT_ID $GCP_DEFAULT_USER_PROJECT_ID \
+  --GCP_SA_KEY_PATH $HOME/.config/gcloud/sa-private-key.json \
   --GCP_SA_ACCESS_TOKEN access_token_placeholder \
   --GCP_ADC_ACCESS_TOKEN $(gcloud auth application-default print-access-token)
 ```
@@ -304,18 +307,42 @@ Or use long arguments:
 
   </details>
 
-When specifying both the `--default` and `--container-instance` options, a container instance will start with default run environment settings.
+</details>
+
+
+### Other examples
 
 <details>
-<summary>Example</summary>
+<summary>Build JAR, build image, & start an interactive container instance with default run environment settings</summary>
 
 ```shell
 ./run.sh --default --container-instance
 ```
 
-</details>
+```shell
+./run.sh --default -ci
+```
 
 </details>
+
+
+<details>
+<summary>Build and run JAR with default run environment settings</summary>
+
+```shell
+./run.sh --default
+```
+
+```shell
+./run.sh --default --no-container-instance
+```
+
+```shell
+./run.sh --default -nci
+```
+
+</details>
+
 
 </details>
 
@@ -326,14 +353,20 @@ When specifying both the `--default` and `--container-instance` options, a conta
 >
 > This project currently invokes the BigQuery Java SDK (and later the BigQuery RESTful services) via the `mvn test` interface. Use that for now.
 > 
-> _**Refer to**_: <a href="export GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/sa-private-key.json">`/src/test` README.md</a>.
+> _**Refer to**_: <a href="https://github.com/squidmin/bigquery-labs/blob/main/src/test/README.md">`/src/test` README.md</a>.
 
 <details>
 <summary>Using "exec java" command. Specify a profile.</summary>
 
 ```shell
 exec java -jar \
-  -Dspring.profiles.active=local \
+  -Dspring.profiles.active=$PROFILE \
+  -DGCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
+  -DGCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN \
+  -DGCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
+  -DGCP_DEFAULT_USER_DATASET="test_dataset_integration" \
+  -DGCP_DEFAULT_USER_TABLE="test_table_integration_custom" \
   ./target/bigquery-labs-0.0.1-SNAPSHOT.jar
 ```
 
@@ -345,8 +378,13 @@ exec java -jar \
 
 ```shell
 mvn spring-boot:run \
-  -Dspring-boot.run.profiles=local \
-  -DGOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  -Dspring-boot.run.profiles=$PROFILE \
+  -DGCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
+  -DGCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN \
+  -DGCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
+  -DGCP_DEFAULT_USER_DATASET="test_dataset_integration" \
+  -DGCP_DEFAULT_USER_TABLE="test_table_integration_custom"
 ```
 
 </details>
@@ -364,15 +402,15 @@ mvn spring-boot:run \
 
 ```shell
 bq ls --filter labels.key:value \
-  --max_results integer \
+  --max_results INTEGER \
   --format=prettyjson \
-  --project_id project_id
+  --project_id PROJECT_ID
 ```
 
 **Replace the following**:
 - `key:value`: a label key and value, if applicable.
-- `integer`: an integer representing the number of datasets to list.
-- `project_id`: the name of the GCP project to target.
+- `INTEGER`: an integer representing the number of datasets to list.
+- `PROJECT_ID`: the name of the GCP project containing the datasets to list.
 
 **Examples**:
 
@@ -400,7 +438,7 @@ bq --location=us mk \
   --label=test_label_2:test_value_2 \
   --max_time_travel_hours=168 \
   --storage_billing_model=LOGICAL \
-  lofty-root-378503:test_dataset_name_lofty
+  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET
 ```
 
 The Cloud Key Management Service (KMS) key parameter (`KMS_KEY_NAME`) can be specified.
@@ -411,8 +449,8 @@ You cannot create a Google-encrypted table in a dataset with this parameter set.
 bq --location=us mk \
   --dataset \
   --default_kms_key=KMS_KEY_NAME \
-  ...
-  lofty-root-378503:test_dataset_name_lofty
+  ... \
+  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET
 ```
 
 </details>
@@ -428,7 +466,7 @@ Refer to the <a href="https://cloud.google.com/bigquery/docs/managing-datasets#d
 Remove all tables in the dataset (`-r` flag):
 
 ```shell
-bq rm -r -f -d lofty-root-378503:test_dataset_name_lofty
+bq rm -r -f -d $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET
 ```
 
 </details>
@@ -440,21 +478,21 @@ bq rm -r -f -d lofty-root-378503:test_dataset_name_lofty
 **Create an empty table with an inline schemaDefault definition**
 
 ```shell
-bq mk --table project_id:dataset.table schemaDefault
+bq mk --table PROJECT_ID:DATASET.TABLE SCHEMA
 ```
 
 **Replace the following**:
-- `project_id`: the name of the GCP project to target.
-- `dataset`: the name of the BigQuery dataset to target.
-- `table`: the name of the BigQuery table to target.
-- `schemaDefault`: an inline schemaDefault definition.
+- `PROJECT_ID`: the name of the GCP project to target.
+- `DATASET`: the name of the BigQuery dataset to target.
+- `TABLE`: the name of the BigQuery table to target.
+- `SCHEMA`: an inline schema definition.
 
 Example:
 
 ```shell
 bq mk --table \
-  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
-  id:STRING,fieldA:STRING,fieldB:STRING,fieldC:STRING,fieldD:STRING
+  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty \
+  id:STRING,creation_timestamp:DATETIME,last_update_timestamp:DATETIME,column_a:STRING,column_b:STRING
 ```
 
 ### Specify the schemaDefault in a JSON schemaDefault file
@@ -465,16 +503,16 @@ For an example JSON schemaDefault file, refer to: `/schemaDefault/example.json`.
 
 ```shell
 bq mk --table \
-  project_id:dataset.table \
-  path_to_schema_file
+  PROJECT_ID:DATASET.TABLE \
+  ./path/to/schema/file.json
 ```
 
 Example:
 
 ```shell
 bq mk --table \
-  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
-  ./schemaDefault/example.json
+  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty \
+  ./schema/example.json
 ```
 
 **Create a table with CSV data**
@@ -482,9 +520,9 @@ bq mk --table \
 ```shell
 bq --location=location load \
   --source_format=format \
-  project_id:dataset.table \
-  path_to_data_file \
-  path_to_schema_file
+  PROJECT_ID:DATASET.TABLE \
+  ./path/to/data/file.csv \
+  ./path/to/schema/file.json
 ```
 
 Example:
@@ -492,9 +530,9 @@ Example:
 ```shell
 bq --location=us load \
   --source_format=CSV \
-  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
+  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty \
   ./csv/example.csv \
-  ./schemaDefault/example.json
+  ./schema/example.json
 ```
 
 Refer to the BigQuery documentation: <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#details_of_loading_csv_data">Details of loading CSV data</a>.
@@ -506,31 +544,31 @@ Refer to the BigQuery documentation: <a href="https://cloud.google.com/bigquery/
 <summary>Delete a table</summary>
 
 ```shell
-bq rm --table test_dataset_name_lofty.test_table_name_lofty
+bq rm --table $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty
 ```
 
 </details>
 
 
 <details>
-<summary>Show table schemaDefault</summary>
+<summary>Show table schema</summary>
 
 Example:
 
 ```shell
 bq show \
-  --schemaDefault \
+  --schema \
   --format=prettyjson \
-  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty
+  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty
 ```
 
-The table schemaDefault can be written to a file:
+The table schema can be written to a file:
 
 ```shell
 bq show \
-  --schemaDefault \
+  --schema \
   --format=prettyjson \
-  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \ > ./schemaDefault/example_show-write.json
+  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty \ > ./schema/example_show-write.json
 ```
 
 </details>
@@ -541,8 +579,8 @@ bq show \
 
 ```shell
 bq update \
-  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
-  ./schemaDefault/example_update.json
+  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty \
+  ./schema/example_update.json
 ```
 
 Refer to the <a href="https://cloud.google.com/bigquery/docs/managing-table-schemas">GCP documentation on modifying table schemas.</a>.
@@ -558,7 +596,7 @@ Refer to the <a href="https://cloud.google.com/bigquery/docs/managing-table-sche
 Insert for known values:
 
 ```shell
-bq insert test_dataset_name_lofty.test_table_name_lofty ./json/example.json
+bq insert $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty ./json/example.json
 ```
 
 Specify a template suffix (`--template_suffix` or `-x`):
@@ -566,7 +604,7 @@ Specify a template suffix (`--template_suffix` or `-x`):
 ```shell
 bq insert --ignore_unknown_values \
   --template_suffix=_insert \
-  test_dataset_name_lofty.test_table_name_lofty \
+  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty \
   ./json/example.json
 ```
 
@@ -590,7 +628,7 @@ Example:
 bq query \
   --use_legacy_sql=false \
   'SELECT
-    id, fieldC
+    id, column_b
   FROM
     `lofty-root-378503.test_dataset_name_lofty.test_table_name_lofty`
   LIMIT

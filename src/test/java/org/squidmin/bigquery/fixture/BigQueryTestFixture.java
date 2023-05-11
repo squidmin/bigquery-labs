@@ -24,9 +24,9 @@ public class BigQueryTestFixture {
     public static abstract class QUERIES {
         public static BiFunction<RunEnvironment, String, String> LOOK_UP_BY_ID = (runEnvironment, id) -> String.format(
             "SELECT * FROM %s.%s.%s WHERE id = '%s'",
-            runEnvironment.getDefaultProjectId(),
-            runEnvironment.getDefaultDataset(),
-            runEnvironment.getDefaultTable(),
+            runEnvironment.getGcpDefaultUserProjectId(),
+            runEnvironment.getGcpDefaultUserDataset(),
+            runEnvironment.getGcpDefaultUserTable(),
             id
         );
     }

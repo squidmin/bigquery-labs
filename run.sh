@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Globals.
-DEFAULT_GCP_PROJECT_ID=lofty-root-378503
-LOCAL_GCLOUD_AUTH_DIRECTORY=$HOME/.config/gcloud
+DEFAULT_GCP_PROJECT_ID=lofty-root-378503                 # Default user GCP project ID.
+LOCAL_GCLOUD_AUTH_DIRECTORY=$HOME/.config/gcloud         # Local system directory containing GCP service account key file.
 CONTAINER_GCLOUD_AUTH_DIRECTORY=/root/.config/gcloud
 GCLOUD_SA_KEY_FILENAME=sa-private-key.json
 LOCAL_MAVEN_REPOSITORY=$HOME/.m2
@@ -75,15 +75,23 @@ done
 
 set -- "${POSITIONAL_ARGS[@]}" # Restore CLI positional parameters.
 
-echo "GCP_DEFAULT_USER_PROJECT_ID     = ${GCP_DEFAULT_USER_PROJECT_ID}"
-echo "LOCAL_GCLOUD_AUTH_DIRECTORY     = ${LOCAL_GCLOUD_AUTH_DIRECTORY}"
-echo "GCLOUD_SA_KEY_FILENAME          = ${GCLOUD_SA_KEY_FILENAME}"
-echo "GCP_SA_KEY_PATH                 = ${GCP_SA_KEY_PATH}"
-echo "GCP_ADC_ACCESS_TOKEN            = ${GCP_ADC_ACCESS_TOKEN}"
-echo "GCP_SA_ACCESS_TOKEN             = ${GCP_SA_ACCESS_TOKEN}"
-echo "IMPERSONATED_SERVICE_ACCOUNT    = ${IMPERSONATED_SERVICE_ACCOUNT}"
-echo "DEFAULT                         = ${DEFAULT}"
-echo "CONTAINER_INSTANCE              = ${CONTAINER_INSTANCE}"
+echo "DEFAULT                          = ${DEFAULT}"
+echo "CONTAINER_INSTANCE               = ${CONTAINER_INSTANCE}"
+echo "GCP_SA_KEY_PATH                  = ${GCP_SA_KEY_PATH}"
+echo "GCLOUD_SA_KEY_FILENAME           = ${GCLOUD_SA_KEY_FILENAME}"
+echo "IMPERSONATED_SERVICE_ACCOUNT     = ${IMPERSONATED_SERVICE_ACCOUNT}"
+echo "GCP_ADC_ACCESS_TOKEN             = ${GCP_ADC_ACCESS_TOKEN}"
+echo "GCP_SA_ACCESS_TOKEN              = ${GCP_SA_ACCESS_TOKEN}"
+echo "GCP_DEFAULT_USER_PROJECT_ID      = ${GCP_DEFAULT_USER_PROJECT_ID}"
+echo "GCP_DEFAULT_USER_DATASET         = ${GCP_DEFAULT_USER_DATASET}"
+echo "GCP_DEFAULT_USER_TABLE           = ${GCP_DEFAULT_USER_TABLE}"
+echo "GCP_SA_PROJECT_ID                = ${GCP_SA__PROJECT_ID}"
+echo "GCP_SA_DATASET                   = ${GCP_SA_DATASET}"
+echo "GCP_SA_TABLE                     = ${GCP_SA_TABLE}"
+echo "LOCAL_GCLOUD_AUTH_DIRECTORY      = ${LOCAL_GCLOUD_AUTH_DIRECTORY}"
+echo "CONTAINER_GCLOUD_AUTH_DIRECTORY  = ${CONTAINER_GCLOUD_AUTH_DIRECTORY}"
+echo "LOCAL_MAVEN_REPOSITORY           = ${LOCAL_MAVEN_REPOSITORY}"
+echo "CONTAINER_MAVEN_REPOSITORY       = ${CONTAINER_MAVEN_REPOSITORY}"
 
 if [[ -n $1 ]]; then
   echo "Last line of file specified as non-opt/last argument:"
@@ -95,10 +103,15 @@ chmod +x ./bash/build_image.sh
 chmod +x ./bash/run_container.sh
 
 ./mvnw clean package -P integration \
-  -GCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
-  -DGCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
-  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
-  -DGCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN
+  -DGCP_SA_KEY_PATH=${GCP_SA_KEY_PATH} \
+  -DGCP_ADC_ACCESS_TOKEN=${GCP_ADC_ACCESS_TOKEN} \
+  -DGCP_SA_ACCESS_TOKEN=${GCP_SA_ACCESS_TOKEN} \
+  -DGCP_DEFAULT_USER_PROJECT_ID=${GCP_DEFAULT_USER_PROJECT_ID} \
+  -DGCP_DEFAULT_USER_DATASET=${GCP_DEFAULT_USER_DATASET} \
+  -DGCP_DEFAULT_USER_TABLE=${GCP_DEFAULT_USER_TABLE} \
+  -DGCP_SA_PROJECT_ID=${GCP_SA_PROJECT_ID} \
+  -DGCP_SA_DATASET=${GCP_SA_DATASET} \
+  -DGCP_SA_TABLE=${GCP_SA_TABLE}
 
 if [ -z "$GCP_SA_KEY_PATH" ]
 then
@@ -106,24 +119,29 @@ then
   GCP_SA_KEY_PATH=""
 fi
 
-if [ -z "$CONTAINER_INSTANCE" ] || [ "$CONTAINER_INSTANCE" != "YES" ] || [ "$CONTAINER_INSTANCE" == "NO" ]
+if [ -z "${CONTAINER_INSTANCE}" ] || [ "${CONTAINER_INSTANCE}" != "YES" ] || [ "${CONTAINER_INSTANCE}" == "NO" ]
 then
   echo "Running JAR on host system."
   echo "TODO: Run application with no container instance."
 else
-  if [ "$CONTAINER_INSTANCE" == "YES" ]
+  if [ "${CONTAINER_INSTANCE}" == "YES" ]
   then
     echo "Building container image."
     docker build \
-      --build-arg GCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
+      --build-arg GCP_DEFAULT_USER_PROJECT_ID=${GCP_DEFAULT_USER_PROJECT_ID} \
       -t bigquery-labs .
 
     echo "Starting container instance."
     docker run --rm -it \
-      -e GCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
-      -e GCP_SA_KEY_PATH=GCP_SA_KEY_PATH \
-      -e GCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
-      -e GCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN \
+      -e GCP_SA_KEY_PATH=${GCP_SA_KEY_PATH} \
+      -e GCP_ADC_ACCESS_TOKEN=${GCP_ADC_ACCESS_TOKEN} \
+      -e GCP_SA_ACCESS_TOKEN=${GCP_SA_ACCESS_TOKEN} \
+      -e GCP_DEFAULT_USER_PROJECT_ID=${GCP_DEFAULT_USER_PROJECT_ID} \
+      -e GCP_DEFAULT_USER_DATASET=${GCP_DEFAULT_USER_DATASET} \
+      -e GCP_DEFAULT_USER_TABLE=${GCP_DEFAULT_USER_TABLE} \
+      -e GCP_SA_PROJECT_ID=${GCP_SA_PROJECT_ID} \
+      -e GCP_SA_DATASET=${GCP_SA_DATASET} \
+      -e GCP_SA_TABLE=${GCP_SA_TABLE} \
       -v ${LOCAL_GCLOUD_AUTH_DIRECTORY}:${CONTAINER_GCLOUD_AUTH_DIRECTORY} \
       -v ${LOCAL_MAVEN_REPOSITORY}:${CONTAINER_MAVEN_REPOSITORY} \
       bigquery-labs

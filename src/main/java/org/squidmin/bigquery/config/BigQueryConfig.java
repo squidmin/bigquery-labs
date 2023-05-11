@@ -29,16 +29,17 @@ import java.io.IOException;
 @Slf4j
 public class BigQueryConfig {
 
-    private final String defaultProjectId;
-    private final String defaultDataset;
-    private final String defaultTable;
+    private final String gcpDefaultUserProjectId;
+    private final String gcpDefaultUserDataset;
+    private final String gcpDefaultUserTable;
 
-    private final String saProjectId;
-    private final String saDataset;
-    private final String saTable;
+    private final String gcpSaProjectId;
+    private final String gcpSaDataset;
+    private final String gcpSaTable;
 
-    private final String saKeyPath;
-    private final String gcpAccessToken;
+    private final String gcpSaKeyPath;
+    private final String gcpAdcAccessToken;
+    private final String gcpSaAccessToken;
 
     private final SchemaDefault schemaDefault;
     private final DataTypes dataTypes;
@@ -48,31 +49,34 @@ public class BigQueryConfig {
     private final BigQuery bigQuery;
 
     @Autowired
-    public BigQueryConfig(@Value("${bigquery.application-default.project-id}") String defaultProjectId,
-                          @Value("${bigquery.application-default.dataset}") String defaultDataset,
-                          @Value("${bigquery.application-default.table}") String defaultTable,
-                          @Value("${bigquery.service-account.project-id}") String saProjectId,
-                          @Value("${bigquery.service-account.dataset}") String saDataset,
-                          @Value("${bigquery.service-account.table}") String saTable,
+    public BigQueryConfig(@Value("${bigquery.application-default.project-id}") String gcpDefaultUserProjectId,
+                          @Value("${bigquery.application-default.dataset}") String gcpDefaultUserDataset,
+                          @Value("${bigquery.application-default.table}") String gcpDefaultUserTable,
+                          @Value("${bigquery.service-account.project-id}") String gcpSaProjectId,
+                          @Value("${bigquery.service-account.dataset}") String gcpSaDataset,
+                          @Value("${bigquery.service-account.table}") String gcpSaTable,
                           SchemaDefault schemaDefault,
                           DataTypes dataTypes,
                           SelectFieldsDefault selectFieldsDefault,
                           WhereFieldsDefault whereFieldsDefault) {
 
-        this.defaultProjectId = defaultProjectId;
-        this.defaultDataset = defaultDataset;
-        this.defaultTable = defaultTable;
+        this.gcpDefaultUserProjectId = gcpDefaultUserProjectId;
+        this.gcpDefaultUserDataset = gcpDefaultUserDataset;
+        this.gcpDefaultUserTable = gcpDefaultUserTable;
 
-        this.saProjectId = saProjectId;
-        this.saDataset = saDataset;
-        this.saTable = saTable;
+        this.gcpSaProjectId = gcpSaProjectId;
+        this.gcpSaDataset = gcpSaDataset;
+        this.gcpSaTable = gcpSaTable;
 
-        this.gcpAccessToken = System.getProperty("GCP_SA_ACCESS_TOKEN");
-//        Logger.log(String.format("GCP_SA_ACCESS_TOKEN == %s", this.gcpAccessToken), Logger.LogType.CYAN);
+        this.gcpSaKeyPath = System.getProperty("GCP_SA_KEY_PATH");
+//        Logger.log(String.format("BQ JDK: GCP_SA_KEY_PATH == %s", this.gcpSaKeyPath), Logger.LogType.CYAN);
+        File credentialsPath = new File(gcpSaKeyPath);
 
-        this.saKeyPath = System.getProperty("GOOGLE_APPLICATION_CREDENTIALS");
-//        Logger.log(String.format("BQ JDK: GOOGLE_APPLICATION_CREDENTIALS == %s", this.saKeyPath), Logger.LogType.CYAN);
-        File credentialsPath = new File(saKeyPath);
+        this.gcpAdcAccessToken = System.getProperty("GCP_ADC_ACCESS_TOKEN");
+//        Logger.log(String.format("GCP_ADC_ACCESS_TOKEN == %s", this.gcpAdcAccessToken), Logger.LogType.CYAN);
+
+        this.gcpSaAccessToken = System.getProperty("GCP_SA_ACCESS_TOKEN");
+//        Logger.log(String.format("GCP_SA_ACCESS_TOKEN == %s", this.gcpSaAccessToken), Logger.LogType.CYAN);
 
         this.schemaDefault = schemaDefault;
         this.dataTypes = dataTypes;
@@ -80,7 +84,7 @@ public class BigQueryConfig {
         this.whereFieldsDefault = whereFieldsDefault;
 
         BigQueryOptions.Builder bqOptionsBuilder = BigQueryOptions.newBuilder();
-        bqOptionsBuilder.setProjectId(defaultProjectId).setLocation("us");
+        bqOptionsBuilder.setProjectId(gcpDefaultUserProjectId).setLocation("us");
         GoogleCredentials credentials;
         boolean isBqJdkAuthenticatedUsingSaKeyFile;
         try (FileInputStream stream = new FileInputStream(credentialsPath)) {
@@ -93,7 +97,7 @@ public class BigQueryConfig {
             if (e.getMessage().contains("'type' value 'authorized_user' not recognized. Expecting 'service_account'")) {
                 Logger.log("If you're trying to use Application Default Credentials (ADC), use the command:", Logger.LogType.ERROR);
                 Logger.log("    gcloud auth application-default print-access-token", Logger.LogType.ERROR);
-                Logger.log("to generate a GCP access token and set the output of the command to the \"GOOGLE_APPLICATION_CREDENTIALS\" environment variable.", Logger.LogType.ERROR);
+                Logger.log("to generate a GCP access token and set the output of the command to the \"GCP_ADC_ACCESS_TOKEN\" environment variable.", Logger.LogType.ERROR);
             }
             isBqJdkAuthenticatedUsingSaKeyFile = false;
         }
@@ -104,7 +108,8 @@ public class BigQueryConfig {
         if (!isBqJdkAuthenticatedUsingSaKeyFile && StringUtils.isNotEmpty(adcAccessToken)) {
             bigQuery = bqOptionsBuilder.setCredentials(
                 GoogleCredentials.newBuilder()
-                    .setAccessToken(AccessToken.newBuilder().setTokenValue(adcAccessToken).build()).build()
+                    .setAccessToken(AccessToken.newBuilder().setTokenValue(adcAccessToken).build())
+                    .build()
             ).build().getService();
             Logger.log("Authenticated successfully using Application Default Credentials (ADC) access token.", Logger.LogType.INFO);
         } else {

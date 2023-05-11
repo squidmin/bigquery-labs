@@ -102,32 +102,32 @@ public class BigQueryUtil {
         if (profileOption == ProfileOption.DEFAULT) {
             Logger.log("--- BigQuery default properties ---", Logger.LogType.CYAN);
             echoRunEnvironment(
-                runEnvironment.getDefaultProjectIdDefault(),
-                runEnvironment.getDefaultDatasetDefault(),
-                runEnvironment.getDefaultTableDefault(),
-                runEnvironment.getSaProjectIdDefault(),
-                runEnvironment.getSaDatasetDefault(),
-                runEnvironment.getSaTableDefault()
+                runEnvironment.getGcpDefaultUserProjectIdDefault(),
+                runEnvironment.getGcpDefaultUserDatasetDefault(),
+                runEnvironment.getGcpDefaultUserTableDefault(),
+                runEnvironment.getGcpSaProjectIdDefault(),
+                runEnvironment.getGcpSaDatasetDefault(),
+                runEnvironment.getGcpSaTableDefault()
             );
         } else if (profileOption == ProfileOption.OVERRIDDEN) {
             Logger.log("--- BigQuery overridden properties ---", Logger.LogType.CYAN);
             echoRunEnvironment(
-                runEnvironment.getDefaultProjectIdOverride(),
-                runEnvironment.getDefaultDatasetOverride(),
-                runEnvironment.getDefaultTableOverride(),
-                runEnvironment.getSaProjectIdOverride(),
-                runEnvironment.getSaDatasetOverride(),
-                runEnvironment.getSaTableOverride()
+                runEnvironment.getGcpDefaultUserProjectIdOverride(),
+                runEnvironment.getGcpDefaultUserDatasetOverride(),
+                runEnvironment.getGcpDefaultUserTableOverride(),
+                runEnvironment.getGcpSaProjectIdOverride(),
+                runEnvironment.getGcpSaDatasetOverride(),
+                runEnvironment.getGcpSaTableOverride()
             );
         } else if (profileOption == ProfileOption.ACTIVE) {
             Logger.log("BigQuery resource properties currently configured:", Logger.LogType.CYAN);
             echoRunEnvironment(
-                runEnvironment.getDefaultProjectId(),
-                runEnvironment.getDefaultDataset(),
-                runEnvironment.getDefaultTable(),
-                runEnvironment.getSaProjectId(),
-                runEnvironment.getSaDataset(),
-                runEnvironment.getSaTable()
+                runEnvironment.getGcpDefaultUserProjectId(),
+                runEnvironment.getGcpDefaultUserDataset(),
+                runEnvironment.getGcpDefaultUserTable(),
+                runEnvironment.getGcpSaProjectId(),
+                runEnvironment.getGcpSaDataset(),
+                runEnvironment.getGcpSaTable()
             );
         } else {
             log.error("Error: IntegrationTest.echoBigQueryResourceMetadata(): Invalid option specified.");

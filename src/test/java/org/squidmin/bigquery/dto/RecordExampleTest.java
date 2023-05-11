@@ -21,8 +21,8 @@ public class RecordExampleTest extends IntegrationTest {
 
         RecordExample record = RecordExample.builder().id(id).columnA(columnA).columnB(columnB).build();
 
-        List<String> actualValues = fieldNames.stream().map(record::getField).collect(Collectors.toList());
         List<String> expectedValues = Arrays.asList(id, null, null, columnA, columnB);
+        List<String> actualValues = fieldNames.stream().map(record::getField).collect(Collectors.toList());
 
         Assertions.assertIterableEquals(expectedValues, actualValues);
     }

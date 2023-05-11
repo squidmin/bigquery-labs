@@ -75,20 +75,34 @@ Assuming the user's service account key file is stored in the same directory as 
 
 `/Users/USERNAME/.config/gcloud`
 
+```shell
+export LOCAL_GCLOUD_AUTH_DIRECTORY=$HOME/.config/gcloud
+```
+
 and the target volume on the container instance is: 
 
 `/root/.config/gcloud`
 
+```shell
+export CONTAINER_GCLOUD_AUTH_DIRECTORY=/root/.config/gcloud
+```
+
 the command to run the container instance would be:
 
 ```shell
-docker run \
-  --rm -it \
-  -e GCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
-  -e GCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
-  -v $HOME/.config/gcloud:/root/.config/gcloud \
-  -v $HOME/.m2:/root/.m2 \
-  biquery-labs
+docker run --rm -it \
+      -e GCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
+      -e GCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
+      -e GCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN \
+      -e GCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
+      -e GCP_DEFAULT_USER_DATASET=$GCP_DEFAULT_USER_DATASET \
+      -e GCP_DEFAULT_USER_TABLE=$GCP_DEFAULT_USER_TABLE \
+      -e GCP_SA_PROJECT_ID=$GCP_SA_PROJECT_ID \
+      -e GCP_SA_DATASET=$GCP_SA_DATASET \
+      -e GCP_SA_TABLE=$GCP_SA_TABLE \
+      -v ${LOCAL_GCLOUD_AUTH_DIRECTORY}:${CONTAINER_GCLOUD_AUTH_DIRECTORY} \
+      -v ${LOCAL_MAVEN_REPOSITORY}:${CONTAINER_MAVEN_REPOSITORY} \
+      bigquery-labs
 ```
 
 **Replace the following** in the path to the `gcloud` directory:
@@ -125,10 +139,15 @@ Read <a href="https://maven.apache.org/install.html">here</a> for more informati
 
 ```shell
 ./mvnw clean package -P integration \
-  -DdefaultProjectId=$GCP_PROJECT_ID \
+  -DGCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
   -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
-  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
-  -DGCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN
+  -DGCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN \
+  -DGCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
+  -DGCP_DEFAULT_USER_DATASET=$GCP_DEFAULT_USER_DATASET \
+  -DGCP_DEFAULT_USER_TABLE=$GCP_DEFAULT_USER_TABLE \
+  -DGCP_SA_PROJECT_ID=$GCP_SA_PROJECT_ID \
+  -DGCP_SA_DATASET=$GCP_SA_DATASET \
+  -DGCP_SA_TABLE=$GCP_SA_TABLE
 ```
 
 </details>
@@ -139,7 +158,7 @@ Read <a href="https://maven.apache.org/install.html">here</a> for more informati
 
 ```shell
 docker build \
-  --build-arg GCP_PROJECT_ID=$GCP_PROJECT_ID \
+  --build-arg GCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
   -t bigquery-labs .
 ```
 
@@ -166,11 +185,11 @@ Pass required environment variables on your local system to the VM options, as s
   -Dtest=BigQueryAdminClientIntegrationTest#createTableWithCustomSchema \
   test -P integration \
   -DGCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
-  -DdefaultProjectId="lofty-root-378503" \
-  -DdefaultDataset="test_dataset_integration" \
-  -DdefaultTable="test_table_integration_custom" \
-  -Dschema="id:STRING,client_name:STRING,active:BOOL,creation_timestamp:DATETIME,last_update_timestamp:DATETIME" \
-  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN
+  -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
+  -DGCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
+  -DGCP_DEFAULT_USER_DATASET=$GCP_DEFAULT_USER_DATASET \
+  -DGCP_DEFAULT_USER_TABLE=$GCP_DEFAULT_USER_TABLE \
+  -Dschema="id:STRING,creation_timestamp:DATETIME,last_update_timestamp:DATETIME,column_a:STRING,column_b:BOOL"
 ```
 
 </details>
@@ -220,12 +239,17 @@ It accepts short and long arguments for each environment variable.
 
 ```shell
 docker run --rm -it \
-  -e GCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
   -e GCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
-  -e GCP_SA_ACCESS_TOKEN=access_token_placeholder \
-  -e GCP_ADC_ACCESS_TOKEN=$(gcloud auth application-default print-access-token) \
-  -v $HOME/.config/gcloud:/root/.config/gcloud \
-  -v $HOME/.m2:/root/.m2 \
+  -e GCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
+  -e GCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN \
+  -e GCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
+  -e GCP_DEFAULT_USER_DATASET=$GCP_DEFAULT_USER_DATASET \
+  -e GCP_DEFAULT_USER_TABLE=$GCP_DEFAULT_USER_TABLE \
+  -e GCP_SA_PROJECT_ID=$GCP_SA_PROJECT_ID \
+  -e GCP_SA_DATASET=$GCP_SA_DATASET \
+  -e GCP_SA_TABLE=$GCP_SA_TABLE \
+  -v ${LOCAL_GCLOUD_AUTH_DIRECTORY}:${CONTAINER_GCLOUD_AUTH_DIRECTORY} \
+  -v ${LOCAL_MAVEN_REPOSITORY}:${CONTAINER_MAVEN_REPOSITORY} \
   bigquery-labs
 ```
 
@@ -245,7 +269,7 @@ Or use long arguments:
 
 ```shell
 ./run.sh \
-  --GCP_PROJECT_ID $GCP_DEFAULT_USER_PROJECT_ID \
+  --GCP_DEFAULT_USER_PROJECT_ID $GCP_DEFAULT_USER_PROJECT_ID \
   --GCP_SA_KEY_PATH $HOME/.config/gcloud/sa-private-key.json \
   --GCP_SA_ACCESS_TOKEN access_token_placeholder \
   --GCP_ADC_ACCESS_TOKEN $(gcloud auth application-default print-access-token)
@@ -438,7 +462,7 @@ bq --location=us mk \
   --label=test_label_2:test_value_2 \
   --max_time_travel_hours=168 \
   --storage_billing_model=LOGICAL \
-  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET
+  ${GCP_DEFAULT_USER_PROJECT_ID}:${GCP_DEFAULT_USER_DATASET}
 ```
 
 The Cloud Key Management Service (KMS) key parameter (`KMS_KEY_NAME`) can be specified.
@@ -450,7 +474,7 @@ bq --location=us mk \
   --dataset \
   --default_kms_key=KMS_KEY_NAME \
   ... \
-  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET
+  ${GCP_DEFAULT_USER_PROJECT_ID}:${GCP_DEFAULT_USER_DATASET}
 ```
 
 </details>
@@ -466,7 +490,7 @@ Refer to the <a href="https://cloud.google.com/bigquery/docs/managing-datasets#d
 Remove all tables in the dataset (`-r` flag):
 
 ```shell
-bq rm -r -f -d $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET
+bq rm -r -f -d ${GCP_DEFAULT_USER_PROJECT_ID}:${GCP_DEFAULT_USER_DATASET}
 ```
 
 </details>
@@ -491,7 +515,7 @@ Example:
 
 ```shell
 bq mk --table \
-  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty \
+  ${GCP_DEFAULT_USER_PROJECT_ID}:${GCP_DEFAULT_USER_DATASET}.test_table_name_lofty \
   id:STRING,creation_timestamp:DATETIME,last_update_timestamp:DATETIME,column_a:STRING,column_b:STRING
 ```
 
@@ -511,7 +535,7 @@ Example:
 
 ```shell
 bq mk --table \
-  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty \
+  ${GCP_DEFAULT_USER_PROJECT_ID}:${GCP_DEFAULT_USER_DATASET}.test_table_name_lofty \
   ./schema/example.json
 ```
 
@@ -530,7 +554,7 @@ Example:
 ```shell
 bq --location=us load \
   --source_format=CSV \
-  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty \
+  ${GCP_DEFAULT_USER_PROJECT_ID}:${GCP_DEFAULT_USER_DATASET}.test_table_name_lofty \
   ./csv/example.csv \
   ./schema/example.json
 ```
@@ -544,7 +568,7 @@ Refer to the BigQuery documentation: <a href="https://cloud.google.com/bigquery/
 <summary>Delete a table</summary>
 
 ```shell
-bq rm --table $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty
+bq rm --table ${GCP_DEFAULT_USER_PROJECT_ID}:${GCP_DEFAULT_USER_DATASET}.test_table_name_lofty
 ```
 
 </details>
@@ -559,7 +583,7 @@ Example:
 bq show \
   --schema \
   --format=prettyjson \
-  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty
+  ${GCP_DEFAULT_USER_PROJECT_ID}:${GCP_DEFAULT_USER_DATASET}.test_table_name_lofty
 ```
 
 The table schema can be written to a file:
@@ -568,7 +592,7 @@ The table schema can be written to a file:
 bq show \
   --schema \
   --format=prettyjson \
-  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty \ > ./schema/example_show-write.json
+  ${GCP_DEFAULT_USER_PROJECT_ID}:${GCP_DEFAULT_USER_DATASET}.test_table_name_lofty \ > ./schema/example_show-write.json
 ```
 
 </details>
@@ -579,7 +603,7 @@ bq show \
 
 ```shell
 bq update \
-  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty \
+  ${GCP_DEFAULT_USER_PROJECT_ID}:${GCP_DEFAULT_USER_DATASET}.test_table_name_lofty \
   ./schema/example_update.json
 ```
 
@@ -596,7 +620,7 @@ Refer to the <a href="https://cloud.google.com/bigquery/docs/managing-table-sche
 Insert for known values:
 
 ```shell
-bq insert $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty ./json/example.json
+bq insert ${GCP_DEFAULT_USER_PROJECT_ID}:${GCP_DEFAULT_USER_DATASET}.test_table_name_lofty ./json/example.json
 ```
 
 Specify a template suffix (`--template_suffix` or `-x`):
@@ -604,7 +628,7 @@ Specify a template suffix (`--template_suffix` or `-x`):
 ```shell
 bq insert --ignore_unknown_values \
   --template_suffix=_insert \
-  $GCP_DEFAULT_USER_PROJECT_ID:GCP_DEFAULT_USER_DATASET.test_table_name_lofty \
+  ${GCP_DEFAULT_USER_PROJECT_ID}:${GCP_DEFAULT_USER_DATASET}.test_table_name_lofty \
   ./json/example.json
 ```
 

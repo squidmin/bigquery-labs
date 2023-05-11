@@ -26,19 +26,19 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
 
     @Test
     public void createDataset() {
-        bigQueryAdminClient.createDataset(DEFAULT_DATASET);
+        bigQueryAdminClient.createDataset(GCP_DEFAULT_USER_DATASET);
     }
 
     @Test
     public void deleteDataset() {
-        bigQueryAdminClient.deleteDataset(DEFAULT_PROJECT_ID, DEFAULT_DATASET);
+        bigQueryAdminClient.deleteDataset(GCP_DEFAULT_USER_PROJECT_ID, GCP_DEFAULT_USER_DATASET);
     }
 
     @Test
     public void createTableWithDefaultSchema() {
         BigQueryUtil.echoRunEnvironment(runEnvironment, BigQueryUtil.ProfileOption.ACTIVE);
         Assertions.assertTrue(
-            bigQueryAdminClient.createTable(DEFAULT_DATASET, DEFAULT_TABLE)
+            bigQueryAdminClient.createTable(GCP_DEFAULT_USER_DATASET, GCP_DEFAULT_USER_TABLE)
         );
     }
 
@@ -47,8 +47,8 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
         BigQueryUtil.echoRunEnvironment(runEnvironment, BigQueryUtil.ProfileOption.ACTIVE);
         Assertions.assertTrue(
             bigQueryAdminClient.createTable(
-                DEFAULT_DATASET,
-                DEFAULT_TABLE,
+                GCP_DEFAULT_USER_DATASET,
+                GCP_DEFAULT_USER_TABLE,
                 BigQueryUtil.InlineSchemaTranslator.translate(schemaOverrideString, bqConfig.getDataTypes())
             )
         );
@@ -57,15 +57,20 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
     @Test
     public void deleteTable() {
         bigQueryAdminClient.deleteTable(
-            DEFAULT_PROJECT_ID,
-            DEFAULT_DATASET,
-            DEFAULT_TABLE
+            GCP_DEFAULT_USER_PROJECT_ID,
+            GCP_DEFAULT_USER_DATASET,
+            GCP_DEFAULT_USER_TABLE
         );
     }
 
     @Test
     public void insert() {
-        List<InsertAllRequest.RowToInsert> rowsInserted = bigQueryAdminClient.insert(DEFAULT_PROJECT_ID, DEFAULT_DATASET, DEFAULT_TABLE, BigQueryTestFixture.DEFAULT_ROWS.get());
+        List<InsertAllRequest.RowToInsert> rowsInserted = bigQueryAdminClient.insert(
+            GCP_DEFAULT_USER_PROJECT_ID,
+            GCP_DEFAULT_USER_DATASET,
+            GCP_DEFAULT_USER_TABLE,
+            BigQueryTestFixture.DEFAULT_ROWS.get()
+        );
         Assertions.assertTrue(0 < rowsInserted.size());
         rowsInserted.forEach(row -> Logger.log(String.valueOf(row), Logger.LogType.INFO));
     }

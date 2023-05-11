@@ -31,8 +31,8 @@ import java.util.*;
 })
 public class BigQueryAdminClient {
 
-    private final String defaultProjectId, defaultDataset, defaultTable;
-    private final String saProjectId, saDataset, saTable;
+    private final String gcpDefaultUserProjectId, gcpDefaultUserDataset, gcpDefaultUserTable;
+    private final String gcpSaProjectId, gcpSaDataset, gcpSaTable;
 
     private final BigQuery bq;
 
@@ -44,25 +44,25 @@ public class BigQueryAdminClient {
     public BigQueryAdminClient(BigQueryConfig bqConfig) {
         this.bqConfig = bqConfig;
         this.bq = bqConfig.getBigQuery();
-        this.defaultProjectId = bqConfig.getDefaultProjectId();
-        this.defaultDataset = bqConfig.getDefaultDataset();
-        this.defaultTable = bqConfig.getDefaultTable();
-        this.saProjectId = bqConfig.getSaProjectId();
-        this.saDataset = bqConfig.getSaDataset();
-        this.saTable = bqConfig.getSaTable();
+        this.gcpDefaultUserProjectId = bqConfig.getGcpDefaultUserProjectId();
+        this.gcpDefaultUserDataset = bqConfig.getGcpDefaultUserDataset();
+        this.gcpDefaultUserTable = bqConfig.getGcpDefaultUserTable();
+        this.gcpSaProjectId = bqConfig.getGcpSaProjectId();
+        this.gcpSaDataset = bqConfig.getGcpSaDataset();
+        this.gcpSaTable = bqConfig.getGcpSaTable();
         mapper = new ObjectMapper();
     }
 
     public void listDatasets() {
         try {
-            Page<Dataset> datasets = bq.listDatasets(defaultProjectId, BigQuery.DatasetListOption.pageSize(100));
+            Page<Dataset> datasets = bq.listDatasets(gcpDefaultUserProjectId, BigQuery.DatasetListOption.pageSize(100));
             if (null == datasets) {
-                Logger.log(String.format("Dataset \"%s\" does not contain any models.", defaultDataset), Logger.LogType.ERROR);
+                Logger.log(String.format("Dataset \"%s\" does not contain any models.", gcpDefaultUserDataset), Logger.LogType.ERROR);
                 return;
             }
-            BigQueryUtil.logDatasets(defaultProjectId, datasets);
+            BigQueryUtil.logDatasets(gcpDefaultUserProjectId, datasets);
         } catch (BigQueryException e) {
-            Logger.log(String.format("Project \"%s\" does not contain any datasets.", defaultProjectId), Logger.LogType.ERROR);
+            Logger.log(String.format("Project \"%s\" does not contain any datasets.", gcpDefaultUserProjectId), Logger.LogType.ERROR);
             Logger.log(e.getMessage(), Logger.LogType.ERROR);
         }
     }

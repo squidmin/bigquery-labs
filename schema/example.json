@@ -6,25 +6,27 @@
     "description": "The primary key for this table."
   },
   {
-    "name": "fieldA",
+    "name": "creation_timestamp",
+    "type": "DATETIME",
+    "mode": "REQUIRED",
+    "description": "Time at which the record was added to the database."
+  },
+  {
+    "name": "last_update_timestamp",
+    "type": "DATETIME",
+    "mode": "REQUIRED",
+    "description": "Time at which the record was most recently updated in the database."
+  },
+  {
+    "name": "column_a",
     "type": "STRING",
     "mode": "NULLABLE",
-    "description": "An example field description."
+    "description": "An example STRING column."
   },
   {
-    "name": "fieldB",
-    "type": "STRING",
+    "name": "column_b",
+    "type": "BOOL",
     "mode": "NULLABLE",
-    "defaultValueExpression": "'example_default_value'"
-  },
-  {
-    "name": "fieldC",
-    "type": "STRING",
-    "mode": "NULLABLE"
-  },
-  {
-    "name": "fieldD",
-    "type": "STRING",
-    "mode": "NULLABLE"
+    "description": "An example BOOL column."
   }
 ]

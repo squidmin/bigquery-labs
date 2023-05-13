@@ -7,19 +7,26 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.bigquery.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 import org.squidmin.bigquery.config.BigQueryConfig;
 import org.squidmin.bigquery.config.DataTypes;
 import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
 import org.squidmin.bigquery.config.tables.sandbox.SelectFieldsDefault;
 import org.squidmin.bigquery.config.tables.sandbox.WhereFieldsDefault;
 import org.squidmin.bigquery.dao.RecordExample;
-import org.squidmin.bigquery.dto.Query;
-import org.squidmin.bigquery.dto.ResponseExample;
+import org.squidmin.bigquery.dto.ExampleResponse;
+import org.squidmin.bigquery.dto.ExampleResponseItem;
+import org.squidmin.bigquery.dto.bigquery.Query;
 import org.squidmin.bigquery.exception.CustomJobException;
 import org.squidmin.bigquery.logger.Logger;
 import org.squidmin.bigquery.util.BigQueryUtil;
+import org.squidmin.bigquery.util.StringUtils;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
@@ -38,10 +45,12 @@ public class BigQueryAdminClient {
 
     private final BigQueryConfig bqConfig;
 
+    private final RestTemplate restTemplate;
+
     private final ObjectMapper mapper;
 
     @Autowired
-    public BigQueryAdminClient(BigQueryConfig bqConfig) {
+    public BigQueryAdminClient(BigQueryConfig bqConfig, RestTemplate restTemplate) {
         this.bqConfig = bqConfig;
         this.bq = bqConfig.getBigQuery();
         this.gcpDefaultUserProjectId = bqConfig.getGcpDefaultUserProjectId();
@@ -50,6 +59,7 @@ public class BigQueryAdminClient {
         this.gcpSaProjectId = bqConfig.getGcpSaProjectId();
         this.gcpSaDataset = bqConfig.getGcpSaDataset();
         this.gcpSaTable = bqConfig.getGcpSaTable();
+        this.restTemplate = restTemplate;
         mapper = new ObjectMapper();
     }
 
@@ -230,11 +240,44 @@ public class BigQueryAdminClient {
         return new EmptyTableResult(Schema.of());
     }
 
-    public ResponseExample restfulQuery(Query query) throws JsonProcessingException {
+    public ResponseEntity<ExampleResponse> restfulQuery(Query query) throws IOException {
         String _query = mapper.writeValueAsString(query);
         Logger.log(String.format("QUERY == %s", _query), Logger.LogType.INFO);
-        // TODO: Implement remainder of query method for GCP BigQuery REST API.
-        return null;
+        String uri = bqConfig.getQueryUri();
+        HttpHeaders httpHeaders = getHttpHeaders();
+        HttpEntity<String> request = new HttpEntity<>(mapper.writeValueAsString(query), httpHeaders);
+        try {
+            ResponseEntity<String> responseEntity = restTemplate.postForEntity(uri, request, String.class);
+            String responseBody = responseEntity.getBody();
+            if (!StringUtils.isEmpty(responseBody)) {
+                return new ResponseEntity<>(
+                    ExampleResponse.builder()
+                        .body(BigQueryUtil.toList(responseBody.getBytes(StandardCharsets.UTF_8), bqConfig.getSelectFieldsDefault(), true))
+                        .build(),
+                    HttpStatus.OK
+                );
+            } else {
+                Logger.log("Response body is empty.", Logger.LogType.ERROR);
+            }
+        } catch (HttpClientErrorException e) {
+            String errorMessage = e.getMessage();
+            Logger.log(errorMessage, Logger.LogType.ERROR);
+            return new ResponseEntity<>(
+                ExampleResponse.builder()
+                    .body(Collections.singletonList(ExampleResponseItem.builder().build()))
+                    .errors(Collections.singletonList(errorMessage))
+                    .build(),
+                e.getStatusCode()
+            );
+        }
+        return new ResponseEntity<>(ExampleResponse.builder().build(), HttpStatus.OK);
+    }
+    private HttpHeaders getHttpHeaders() {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Authorization", "Bearer ".concat(bqConfig.getGcpAdcAccessToken()));
+        httpHeaders.add("Accept", MediaType.APPLICATION_JSON_VALUE);
+        httpHeaders.add("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+        return httpHeaders;
     }
 
     public TableResult queryBatch(String query) {

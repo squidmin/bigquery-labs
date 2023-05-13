@@ -7,14 +7,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.squidmin.bigquery.config.DataTypes;
 import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
 import org.squidmin.bigquery.config.tables.sandbox.SelectFieldsDefault;
-import org.squidmin.bigquery.dto.ResponseExample;
+import org.squidmin.bigquery.dto.ExampleResponseItem;
+import org.squidmin.bigquery.dto.bigquery.BigQueryRestServiceResponse;
+import org.squidmin.bigquery.dto.bigquery.BigQueryRow;
+import org.squidmin.bigquery.dto.bigquery.BigQueryRowValue;
 import org.squidmin.bigquery.logger.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -22,28 +24,36 @@ public class BigQueryUtil {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    public static List<ResponseExample> toList(byte[] tableResult, SelectFieldsDefault selectFieldsDefault) throws IOException {
-        List<ResponseExample> response = new ArrayList<>();
-        Map _schema = mapper.readValue(tableResult, Map.class);
-        ArrayList rows = (ArrayList) _schema.get("rows");
+    public static List<ExampleResponseItem> toList(byte[] tableResult, SelectFieldsDefault selectFieldsDefault, boolean isSelectAll) throws IOException {
+        List<ExampleResponseItem> response = new ArrayList<>();
+        BigQueryRestServiceResponse bqResponse = mapper.readValue(tableResult, BigQueryRestServiceResponse.class);
+        List<BigQueryRow> rows = bqResponse.getRows();
         if (null != rows) {
-            for (int i = 0; i < rows.size(); i++) {
-                ResponseExample r = new ResponseExample();
-                Map row = (Map) rows.get(i);
-                ArrayList f = (ArrayList) row.get("f");
-                List<String> _selectFields = selectFieldsDefault.getFields();
-                for (int j = 0; j < _selectFields.size(); j++) {
-                    String name = _selectFields.get(j);
-                    Map v = (Map) f.get(j);
-                    String value = (String) v.get("v");
-                    if (_selectFields.contains(name)) {
-                        r.setFromBigQueryResponse(name, value);
+            for (BigQueryRow r : rows) {
+                ExampleResponseItem exampleResponseItem = new ExampleResponseItem();
+                List<BigQueryRowValue> f = r.getF();
+                if (!isSelectAll) {
+                    for (int j = 0; j < selectFieldsDefault.getFields().size(); j++) {
+                        String name = selectFieldsDefault.getFields().get(j);
+                        setResponseItem(exampleResponseItem, f, j, name);
                     }
+                    response.add(exampleResponseItem);
+                } else {
+                    for (int j = 0; j < bqResponse.getSchema().getFields().size(); j++) {
+                        String name = bqResponse.getSchema().getFields().get(j).getName();
+                        setResponseItem(exampleResponseItem, f, j, name);
+                    }
+                    response.add(exampleResponseItem);
                 }
-                response.add(r);
             }
         }
         return response;
+    }
+
+    private static void setResponseItem(ExampleResponseItem exampleResponseItem, List<BigQueryRowValue> f, int index, String name) {
+        BigQueryRowValue v = f.get(index);
+        String value = v.getV();
+        exampleResponseItem.setFromBigQueryResponse(name, value);
     }
 
     public static void logDataTypes(DataTypes dataTypes) {
@@ -81,27 +91,30 @@ public class BigQueryUtil {
         Logger.echoHorizontalLine(Logger.LogType.INFO);
     }
 
-    public static void echoRunEnvironment(
-        String defaultProjectId, String defaultDataset, String defaultTable,
-        String saProjectId, String saDataset, String saTable) {
-
-        Logger.log(String.format("Default Project ID: %s", defaultProjectId), Logger.LogType.INFO);
-        Logger.log(String.format("Default Dataset name: %s", defaultDataset), Logger.LogType.INFO);
-        Logger.log(String.format("Default Table name: %s", defaultTable), Logger.LogType.INFO);
-
-        Logger.log(String.format("Service account Project ID: %s", saProjectId), Logger.LogType.INFO);
-        Logger.log(String.format("Service account Dataset name: %s", saDataset), Logger.LogType.INFO);
-        Logger.log(String.format("Service account Table name: %s", saTable), Logger.LogType.INFO);
-
+    public static void logRunConfig() {
+        Logger.echoHorizontalLine(Logger.LogType.CYAN);
+        Logger.log("Run config:", Logger.LogType.CYAN);
+        Logger.echoHorizontalLine(Logger.LogType.CYAN);
+        Logger.log(String.format("PROFILE                         %s", System.getProperty("PROFILE")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_SA_KEY_PATH                 %s", System.getProperty("GCP_SA_KEY_PATH")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_ADC_ACCESS_TOKEN            %s", System.getProperty("GCP_ADC_ACCESS_TOKEN").substring(0, 9).concat("...")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_SA_ACCESS_TOKEN             %s", System.getProperty("GCP_SA_ACCESS_TOKEN")).substring(0, 9).concat("..."), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_DEFAULT_USER_PROJECT_ID     %s", System.getProperty("GCP_DEFAULT_USER_PROJECT_ID")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_DEFAULT_USER_DATASET        %s", System.getProperty("GCP_DEFAULT_USER_DATASET")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_DEFAULT_USER_TABLE          %s", System.getProperty("GCP_DEFAULT_USER_TABLE")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_SA_PROJECT_ID               %s", System.getProperty("GCP_SA_PROJECT_ID")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_SA_DATASET                  %s", System.getProperty("GCP_SA_DATASET")), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_SA_TABLE                    %s", System.getProperty("GCP_SA_TABLE")), Logger.LogType.CYAN);
+        Logger.echoHorizontalLine(Logger.LogType.CYAN);
     }
 
     public enum ProfileOption {DEFAULT, OVERRIDDEN, ACTIVE}
 
-    public static void echoRunEnvironment(RunEnvironment runEnvironment, ProfileOption profileOption) {
+    public static void logBqProperties(RunEnvironment runEnvironment, ProfileOption profileOption) {
         Logger.echoHorizontalLine(Logger.LogType.INFO);
         if (profileOption == ProfileOption.DEFAULT) {
             Logger.log("--- BigQuery default properties ---", Logger.LogType.CYAN);
-            echoRunEnvironment(
+            logBqProperties(
                 runEnvironment.getGcpDefaultUserProjectIdDefault(),
                 runEnvironment.getGcpDefaultUserDatasetDefault(),
                 runEnvironment.getGcpDefaultUserTableDefault(),
@@ -111,7 +124,7 @@ public class BigQueryUtil {
             );
         } else if (profileOption == ProfileOption.OVERRIDDEN) {
             Logger.log("--- BigQuery overridden properties ---", Logger.LogType.CYAN);
-            echoRunEnvironment(
+            logBqProperties(
                 runEnvironment.getGcpDefaultUserProjectIdOverride(),
                 runEnvironment.getGcpDefaultUserDatasetOverride(),
                 runEnvironment.getGcpDefaultUserTableOverride(),
@@ -121,7 +134,7 @@ public class BigQueryUtil {
             );
         } else if (profileOption == ProfileOption.ACTIVE) {
             Logger.log("BigQuery resource properties currently configured:", Logger.LogType.CYAN);
-            echoRunEnvironment(
+            logBqProperties(
                 runEnvironment.getGcpDefaultUserProjectId(),
                 runEnvironment.getGcpDefaultUserDataset(),
                 runEnvironment.getGcpDefaultUserTable(),
@@ -133,6 +146,19 @@ public class BigQueryUtil {
             log.error("Error: IntegrationTest.echoBigQueryResourceMetadata(): Invalid option specified.");
         }
         Logger.echoHorizontalLine(Logger.LogType.INFO);
+    }
+
+    public static void logBqProperties(
+        String gcpDefaultUserProjectId, String gcpDefaultUserDataset, String gcpDefaultUserTable,
+        String gcpSaProjectId, String gcpSaDataset, String gcpSaTable) {
+
+        Logger.log(String.format("Default Project ID: %s", gcpDefaultUserProjectId), Logger.LogType.INFO);
+        Logger.log(String.format("Default Dataset name: %s", gcpDefaultUserDataset), Logger.LogType.INFO);
+        Logger.log(String.format("Default Table name: %s", gcpDefaultUserTable), Logger.LogType.INFO);
+
+        Logger.log(String.format("Service account Project ID: %s", gcpSaProjectId), Logger.LogType.INFO);
+        Logger.log(String.format("Service account Dataset name: %s", gcpSaDataset), Logger.LogType.INFO);
+        Logger.log(String.format("Service account Table name: %s", gcpSaTable), Logger.LogType.INFO);
     }
 
     public static class InlineSchemaTranslator {

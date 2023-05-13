@@ -41,6 +41,8 @@ public class BigQueryConfig {
     private final String gcpAdcAccessToken;
     private final String gcpSaAccessToken;
 
+    private final String queryUri;
+
     private final SchemaDefault schemaDefault;
     private final DataTypes dataTypes;
     private final SelectFieldsDefault selectFieldsDefault;
@@ -55,6 +57,7 @@ public class BigQueryConfig {
                           @Value("${bigquery.service-account.project-id}") String gcpSaProjectId,
                           @Value("${bigquery.service-account.dataset}") String gcpSaDataset,
                           @Value("${bigquery.service-account.table}") String gcpSaTable,
+                          @Value("${bigquery.uri.queries}") String queryUri,
                           SchemaDefault schemaDefault,
                           DataTypes dataTypes,
                           SelectFieldsDefault selectFieldsDefault,
@@ -67,6 +70,8 @@ public class BigQueryConfig {
         this.gcpSaProjectId = gcpSaProjectId;
         this.gcpSaDataset = gcpSaDataset;
         this.gcpSaTable = gcpSaTable;
+
+        this.queryUri = queryUri;
 
         this.gcpSaKeyPath = System.getProperty("GCP_SA_KEY_PATH");
 //        Logger.log(String.format("BQ JDK: GCP_SA_KEY_PATH == %s", this.gcpSaKeyPath), Logger.LogType.CYAN);

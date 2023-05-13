@@ -8,11 +8,13 @@ Instructions for running tests.
 If you're running the tests locally in a container instance, map your local `gcloud` directory to the `/root/.config/gcloud` directory in the container (as described <a href="https://github.com/squidmin/bigquery-labs#run-the-application">here</a>.)
 
 <details>
-<summary>List BigQuery resource metadata configured for a particular Spring profile</summary>
+<summary>List BigQuery resource config for a particular Spring profile</summary>
+
+### `mvn test`
 
 ```shell
 ./mvnw \
-  -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
+  -Dtest=BigQueryAdminClientIntegrationTest#echoBigQueryResourceConfig \
   test -P PROFILE_NAME \
   -DGCP_SA_KEY_PATH=GCP_SA_KEY_PATH \
   -DGCP_ADC_ACCESS_TOKEN=GCP_ADC_ACCESS_TOKEN \
@@ -33,7 +35,7 @@ Example:
 
 ```shell
 ./mvnw \
-  -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
+  -Dtest=BigQueryAdminClientIntegrationTest#echoBigQueryResourceConfig \
   test -P integration \
   -DGCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
   -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
@@ -42,12 +44,16 @@ Example:
   -DGCP_DEFAULT_USER_DATASET="test_dataset_integration"
 ```
 
+---
+
+### Using `-DargLine` to specify application profile
+
 The `-DargLine` parameter can also indicate the application profile to activate.
 
 ```shell
 ./mvnw \
   -DargLine="-Dspring.profiles.active=PROFILE_NAME" \
-  -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
+  -Dtest=BigQueryAdminClientIntegrationTest#echoBigQueryResourceConfig \
   test \
   -DGCP_SA_KEY_PATH=GCP_SA_KEY_PATH \
   -DGCP_ADC_ACCESS_TOKEN=GCP_ADC_ACCESS_TOKEN \
@@ -61,7 +67,7 @@ Example:
 ```shell
 ./mvnw \
   -DargLine="-Dspring.profiles.active=integration" \
-  -Dtest=BigQueryAdminClientIntegrationTest#echoDefaultBigQueryResourceMetadata \
+  -Dtest=BigQueryAdminClientIntegrationTest#echoBigQueryResourceConfig \
   test \
   -DGCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
   -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \

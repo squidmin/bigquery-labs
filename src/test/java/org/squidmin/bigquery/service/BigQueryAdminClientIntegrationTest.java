@@ -15,38 +15,38 @@ import java.util.List;
 public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
 
     @Test
-    public void echoDefaultBigQueryResourceMetadata() {
-        BigQueryUtil.echoRunEnvironment(runEnvironment, BigQueryUtil.ProfileOption.DEFAULT);
+    public void echoBigQueryResourceConfig() {
+        BigQueryUtil.logBqProperties(runEnvironment, BigQueryUtil.ProfileOption.DEFAULT);
     }
 
     @Test
     public void listDatasets() {
-        bigQueryAdminClient.listDatasets();
+        bqAdminClient.listDatasets();
     }
 
     @Test
     public void createDataset() {
-        bigQueryAdminClient.createDataset(GCP_DEFAULT_USER_DATASET);
+        bqAdminClient.createDataset(GCP_DEFAULT_USER_DATASET);
     }
 
     @Test
     public void deleteDataset() {
-        bigQueryAdminClient.deleteDataset(GCP_DEFAULT_USER_PROJECT_ID, GCP_DEFAULT_USER_DATASET);
+        bqAdminClient.deleteDataset(GCP_DEFAULT_USER_PROJECT_ID, GCP_DEFAULT_USER_DATASET);
     }
 
     @Test
     public void createTableWithDefaultSchema() {
-        BigQueryUtil.echoRunEnvironment(runEnvironment, BigQueryUtil.ProfileOption.ACTIVE);
+        BigQueryUtil.logBqProperties(runEnvironment, BigQueryUtil.ProfileOption.ACTIVE);
         Assertions.assertTrue(
-            bigQueryAdminClient.createTable(GCP_DEFAULT_USER_DATASET, GCP_DEFAULT_USER_TABLE)
+            bqAdminClient.createTable(GCP_DEFAULT_USER_DATASET, GCP_DEFAULT_USER_TABLE)
         );
     }
 
     @Test
     public void createTableWithCustomSchema() {
-        BigQueryUtil.echoRunEnvironment(runEnvironment, BigQueryUtil.ProfileOption.ACTIVE);
+        BigQueryUtil.logBqProperties(runEnvironment, BigQueryUtil.ProfileOption.ACTIVE);
         Assertions.assertTrue(
-            bigQueryAdminClient.createTable(
+            bqAdminClient.createTable(
                 GCP_DEFAULT_USER_DATASET,
                 GCP_DEFAULT_USER_TABLE,
                 BigQueryUtil.InlineSchemaTranslator.translate(schemaOverrideString, bqConfig.getDataTypes())
@@ -56,7 +56,7 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
 
     @Test
     public void deleteTable() {
-        bigQueryAdminClient.deleteTable(
+        bqAdminClient.deleteTable(
             GCP_DEFAULT_USER_PROJECT_ID,
             GCP_DEFAULT_USER_DATASET,
             GCP_DEFAULT_USER_TABLE
@@ -65,7 +65,7 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
 
     @Test
     public void insert() {
-        List<InsertAllRequest.RowToInsert> rowsInserted = bigQueryAdminClient.insert(
+        List<InsertAllRequest.RowToInsert> rowsInserted = bqAdminClient.insert(
             GCP_DEFAULT_USER_PROJECT_ID,
             GCP_DEFAULT_USER_DATASET,
             GCP_DEFAULT_USER_TABLE,

@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
 import org.squidmin.bigquery.config.BigQueryConfig;
 import org.squidmin.bigquery.config.IntegrationTestConfig;
 import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
 import org.squidmin.bigquery.fixture.BigQueryTestFixture;
-import org.squidmin.bigquery.logger.Logger;
 import org.squidmin.bigquery.service.BigQueryAdminClient;
 import org.squidmin.bigquery.util.BigQueryUtil;
 import org.squidmin.bigquery.util.RunEnvironment;
@@ -26,7 +26,10 @@ public abstract class IntegrationTest {
     @Autowired
     protected BigQueryConfig bqConfig;
 
-    protected BigQueryAdminClient bigQueryAdminClient;
+    protected BigQueryAdminClient bqAdminClient;
+
+    @Autowired
+    protected RestTemplate restTemplate;
 
     protected String
         gcpDefaultUserProjectIdDefault, gcpDefaultUserDatasetDefault, gcpDefaultUserTableDefault,
@@ -49,27 +52,14 @@ public abstract class IntegrationTest {
     @Before
     public void before() {
         initialize();
-        bigQueryAdminClient = new BigQueryAdminClient(bqConfig);
-        Logger.echoHorizontalLine(Logger.LogType.CYAN);
-        Logger.log("Run environment CLI arguments", Logger.LogType.CYAN);
-        Logger.echoHorizontalLine(Logger.LogType.CYAN);
-        Logger.log(String.format("PROFILE                         %s", System.getProperty("PROFILE")), Logger.LogType.CYAN);
-        Logger.log(String.format("GCP_SA_KEY_PATH                 %s", System.getProperty("GCP_SA_KEY_PATH")), Logger.LogType.CYAN);
-        Logger.log(String.format("GCP_ADC_ACCESS_TOKEN            %s", System.getProperty("GCP_ADC_ACCESS_TOKEN")), Logger.LogType.CYAN);
-        Logger.log(String.format("GCP_SA_ACCESS_TOKEN             %s", System.getProperty("GCP_SA_ACCESS_TOKEN")), Logger.LogType.CYAN);
-        Logger.log(String.format("GCP_DEFAULT_USER_PROJECT_ID     %s", System.getProperty("GCP_DEFAULT_USER_PROJECT_ID")), Logger.LogType.CYAN);
-        Logger.log(String.format("GCP_DEFAULT_USER_DATASET        %s", System.getProperty("GCP_DEFAULT_USER_DATASET")), Logger.LogType.CYAN);
-        Logger.log(String.format("GCP_DEFAULT_USER_TABLE          %s", System.getProperty("GCP_DEFAULT_USER_TABLE")), Logger.LogType.CYAN);
-        Logger.log(String.format("GCP_SA_PROJECT_ID               %s", System.getProperty("GCP_SA_PROJECT_ID")), Logger.LogType.CYAN);
-        Logger.log(String.format("GCP_SA_DATASET                  %s", System.getProperty("GCP_SA_DATASET")), Logger.LogType.CYAN);
-        Logger.log(String.format("GCP_SA_TABLE                    %s", System.getProperty("GCP_SA_TABLE")), Logger.LogType.CYAN);
-        Logger.echoHorizontalLine(Logger.LogType.CYAN);
+        bqAdminClient = new BigQueryAdminClient(bqConfig, restTemplate);
+        BigQueryUtil.logRunConfig();
     }
 
     private void initialize() {
         initRunEnvironmentDefaultValues();
         initRunEnvironmentOverriddenValues();
-        initRunEnvironmentMetadata();
+        initRunEnvironment();
         initRunEnvironmentActiveProperties();
     }
 
@@ -112,7 +102,7 @@ public abstract class IntegrationTest {
         }
     }
 
-    private void initRunEnvironmentMetadata() {
+    private void initRunEnvironment() {
         // Run environment defaults.
         runEnvironment.setGcpDefaultUserProjectIdDefault(gcpDefaultUserProjectIdDefault);
         runEnvironment.setGcpDefaultUserDatasetDefault(gcpDefaultUserDatasetDefault);

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.web.client.RestTemplate;
 import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
 import org.squidmin.bigquery.config.tables.sandbox.SelectFieldsDefault;
 import org.squidmin.bigquery.config.tables.sandbox.WhereFieldsDefault;
@@ -16,22 +17,25 @@ import org.squidmin.bigquery.config.tables.sandbox.WhereFieldsDefault;
 public class IntegrationTestConfig {
 
     @Value("${bigquery.application-default.project-id}")
-    private String defaultProjectId;
+    private String gcpDefaultUserProjectId;
 
     @Value("${bigquery.application-default.dataset}")
-    private String defaultDataset;
+    private String gcpDefaultUserDataset;
 
     @Value("${bigquery.application-default.table}")
-    private String defaultTable;
+    private String gcpDefaultUserTable;
 
     @Value("${bigquery.service-account.project-id}")
-    private String saProjectId;
+    private String gcpSaProjectId;
 
     @Value("${bigquery.service-account.dataset}")
-    private String saDataset;
+    private String gcpSaDataset;
 
     @Value("${bigquery.service-account.table}")
-    private String saTable;
+    private String gcpSaTable;
+
+    @Value("${bigquery.uri.queries}")
+    private String queryUri;
 
     @Autowired
     private SchemaDefault schemaDefault;
@@ -48,33 +52,38 @@ public class IntegrationTestConfig {
     private BigQueryConfig bqConfig;
 
     @Bean
-    public String defaultProjectId() {
-        return defaultProjectId;
+    public String gcpDefaultUserProjectId() {
+        return gcpDefaultUserProjectId;
     }
 
     @Bean
-    public String defaultDataset() {
-        return defaultDataset;
+    public String gcpDefaultUserDataset() {
+        return gcpDefaultUserDataset;
     }
 
     @Bean
-    public String defaultTable() {
-        return defaultTable;
+    public String gcpDefaultUserTable() {
+        return gcpDefaultUserTable;
     }
 
     @Bean
-    public String saProjectId() {
-        return saProjectId;
+    public String gcpSaProjectId() {
+        return gcpSaProjectId;
     }
 
     @Bean
-    public String saDataset() {
-        return saDataset;
+    public String gcpSaDataset() {
+        return gcpSaDataset;
     }
 
     @Bean
-    public String saTable() {
-        return saTable;
+    public String gcpSaTable() {
+        return gcpSaTable;
+    }
+
+    @Bean
+    public String queryUri() {
+        return queryUri;
     }
 
     @Bean
@@ -98,14 +107,20 @@ public class IntegrationTestConfig {
     }
 
     @Bean
-    public BigQueryConfig bigQueryConfig() {
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+
+    @Bean
+    public BigQueryConfig bqConfig() {
         bqConfig = new BigQueryConfig(
-            defaultProjectId,
-            defaultDataset,
-            defaultTable,
-            saProjectId,
-            saDataset,
-            saTable,
+            gcpDefaultUserProjectId,
+            gcpDefaultUserDataset,
+            gcpDefaultUserTable,
+            gcpSaProjectId,
+            gcpSaDataset,
+            gcpSaTable,
+            queryUri,
             schemaDefault,
             dataTypes,
             selectFieldsDefault,

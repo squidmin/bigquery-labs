@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @AllArgsConstructor
 @Slf4j
-public class ResponseExample {
+public class ExampleResponseItem {
 
     private String id;
     private String creationTimestamp;

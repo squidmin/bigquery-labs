@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.squidmin.bigquery.logger.Logger;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -19,7 +22,10 @@ public class RecordExample {
     private String columnA;
     private String columnB;
 
+    private Map<String, String> fields = new HashMap<>();
+
     public String getField(String field) {
+//        return fields.getOrDefault(field, Strings.EMPTY);
         if (field.equalsIgnoreCase("id")) {
             return id;
         } else if (field.equalsIgnoreCase("creation_timestamp")) {

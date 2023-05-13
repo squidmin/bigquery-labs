@@ -150,6 +150,21 @@ Read <a href="https://maven.apache.org/install.html">here</a> for more informati
   -DGCP_SA_TABLE=$GCP_SA_TABLE
 ```
 
+Or use `mvn clean install`:
+
+```shell
+./mvnw clean install -P integration \
+  -DGCP_SA_KEY_PATH=$HOME/.config/gcloud \
+  -DGCP_ADC_ACCESS_TOKEN="$(gcloud auth application-default print-access-token)" \
+  -DGCP_SA_ACCESS_TOKEN=placeholder \
+  -DGCP_DEFAULT_USER_PROJECT_ID=lofty-root-378503 \
+  -DGCP_DEFAULT_USER_DATASET=test_dataset_integration \
+  -DGCP_DEFAULT_USER_TABLE=test_table_integration \
+  -DGCP_SA_PROJECT_ID=placeholder \
+  -DGCP_SA_DATASET=placeholder \
+  -DGCP_SA_TABLE=placeholder
+```
+
 </details>
 
 

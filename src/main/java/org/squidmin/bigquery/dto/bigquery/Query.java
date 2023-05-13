@@ -1,4 +1,4 @@
-package org.squidmin.bigquery.dto;
+package org.squidmin.bigquery.dto.bigquery;
 
 import lombok.Builder;
 import lombok.Data;

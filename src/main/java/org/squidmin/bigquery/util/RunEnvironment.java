@@ -32,9 +32,11 @@ public class RunEnvironment {
     private String gcpDefaultUserProjectId;
     private String gcpDefaultUserDataset;
     private String gcpDefaultUserTable;
+
     private String gcpSaProjectId;
     private String gcpSaDataset;
     private String gcpSaTable;
+    //
 
     private Schema schema;
     //

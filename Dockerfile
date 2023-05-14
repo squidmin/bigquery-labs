@@ -26,4 +26,4 @@ ENV GCP_SA_TABLE=${GCP_SA_TABLE}
 # Copy the project into the container.
 ADD . ${APP_DIR}
 
-ENTRYPOINT ["sh", "-c", "cd /usr/local/app && sh"]
+ENTRYPOINT ["sh", "-c", "cd ${APP_DIR} && sh"]

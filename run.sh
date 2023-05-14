@@ -3,10 +3,10 @@
 # Globals.
 DEFAULT_GCP_PROJECT_ID=lofty-root-378503                 # Default user GCP project ID.
 LOCAL_GCLOUD_AUTH_DIRECTORY=$HOME/.config/gcloud         # Local system directory containing GCP service account key file.
-CONTAINER_GCLOUD_AUTH_DIRECTORY=/root/.config/gcloud
-GCLOUD_SA_KEY_FILENAME=sa-private-key.json
-LOCAL_MAVEN_REPOSITORY=$HOME/.m2
-CONTAINER_MAVEN_REPOSITORY=/root/.m2
+CONTAINER_GCLOUD_AUTH_DIRECTORY=/root/.config/gcloud     # Container directory containing GDP service account key file.
+GCLOUD_SA_KEY_FILENAME=sa-private-key.json               # Name of GCP service account key file.
+LOCAL_MAVEN_REPOSITORY=$HOME/.m2                         # Maven repository local system directory.
+CONTAINER_MAVEN_REPOSITORY=/root/.m2                     # Maven repository container directory.
 
 POSITIONAL_ARGS=()
 

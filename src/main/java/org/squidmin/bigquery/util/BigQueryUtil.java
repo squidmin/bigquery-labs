@@ -24,6 +24,24 @@ public class BigQueryUtil {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    public static List<ExampleResponseItem> toList(TableResult tableResult) {
+        List<ExampleResponseItem> response = new ArrayList<>();
+        if (null != tableResult && 0 < tableResult.getTotalRows()) {
+            tableResult.iterateAll().forEach(
+                row -> response.add(
+                    ExampleResponseItem.builder()
+                        .id(row.get(0).getStringValue())
+                        .creationTimestamp(row.get(1).getStringValue())
+                        .lastUpdateTimestamp(row.get(2).getStringValue())
+                        .columnA(row.get(3).getStringValue())
+                        .columnB(row.get(4).getStringValue())
+                        .build()
+                )
+            );
+        }
+        return response;
+    }
+
     public static List<ExampleResponseItem> toList(byte[] tableResult, SelectFieldsDefault selectFieldsDefault, boolean isSelectAll) throws IOException {
         List<ExampleResponseItem> response = new ArrayList<>();
         BigQueryRestServiceResponse bqResponse = mapper.readValue(tableResult, BigQueryRestServiceResponse.class);

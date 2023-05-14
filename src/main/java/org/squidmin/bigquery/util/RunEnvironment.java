@@ -39,6 +39,5 @@ public class RunEnvironment {
     //
 
     private Schema schema;
-    //
 
 }

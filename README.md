@@ -519,9 +519,9 @@ bq rm -r -f -d ${GCP_DEFAULT_USER_PROJECT_ID}:${GCP_DEFAULT_USER_DATASET}
 
 
 <details>
-<summary>Create a table with a configured schemaDefault</summary>
+<summary>Create a table with a configured schema</summary>
 
-**Create an empty table with an inline schemaDefault definition**
+**Create an empty table with an inline schema definition**
 
 ```shell
 bq mk --table PROJECT_ID:DATASET.TABLE SCHEMA
@@ -538,12 +538,12 @@ Example:
 ```shell
 bq mk --table \
   ${GCP_DEFAULT_USER_PROJECT_ID}:${GCP_DEFAULT_USER_DATASET}.test_table_name_lofty \
-  id:STRING,creation_timestamp:DATETIME,last_update_timestamp:DATETIME,column_a:STRING,column_b:STRING
+  id:STRING,creation_timestamp:DATETIME,last_update_timestamp:DATETIME,column_a:STRING,column_b:BOOL
 ```
 
-### Specify the schemaDefault in a JSON schemaDefault file
+### Specify the schema in a JSON schema file
 
-For an example JSON schemaDefault file, refer to: `/schemaDefault/example.json`.
+For an example JSON schema file, refer to: `/schema/example.json`.
 
 **Create an empty table**
 

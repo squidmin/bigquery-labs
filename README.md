@@ -8,6 +8,7 @@ GCP BigQuery labs using the Java SDK.
 
 Made with:
 - **Adoptium Temurin OpenJDK 11.0.17**
+- **Spring Boot v2.4.3**
 - **Apache Maven 3.8.7**
 - **IntelliJ IDEA 2023.1 (Ultimate Edition)**
 - **GoLand 2023.1 (Ultimate Edition)**
@@ -64,7 +65,7 @@ export GCP_SA_ACCESS_TOKEN=$(gcloud auth print-access-token --impersonate-servic
 Example:
 
 ```shell
-export GCP_SA_ACCESS_TOKEN=$(gcloud auth print-access-token --impersonate-service-account='9644524330-compute@developer.gserviceaccount.com')
+export GCP_SA_ACCESS_TOKEN=$(gcloud auth print-access-token --impersonate-service-account='sa-developer@your-sa-name.iam.gserviceaccount.com')
 ```
 
 </details>

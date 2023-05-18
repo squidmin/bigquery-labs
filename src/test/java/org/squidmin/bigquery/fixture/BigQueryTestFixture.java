@@ -1,13 +1,18 @@
 package org.squidmin.bigquery.fixture;
 
+import com.google.api.gax.paging.Page;
+import com.google.cloud.PageImpl;
+import com.google.cloud.bigquery.*;
+import org.squidmin.bigquery.config.DataTypes;
+import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
 import org.squidmin.bigquery.dao.RecordExample;
+import org.squidmin.bigquery.dto.ExampleResponseItem;
+import org.squidmin.bigquery.util.BigQueryUtil;
 import org.squidmin.bigquery.util.RunEnvironment;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.TimeZone;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -50,5 +55,58 @@ public class BigQueryTestFixture {
                 .columnB("asdf2")
                 .build();
         }).collect(Collectors.toList());
+
+    public static TableResult validTableResultForExampleResponseItem(SchemaDefault schemaDefault, DataTypes dataTypes) {
+        List<Field> fields = new ArrayList<>();
+        schemaDefault.getFields().forEach(field ->
+            fields.add(
+                Field.newBuilder(
+                    field.getName(),
+                    BigQueryUtil.InlineSchemaTranslator.translateType(field.getType(), dataTypes)
+                ).build()
+            )
+        );
+        Schema schema = Schema.of(fields);
+        final int ROWS_LIMIT = 5;
+        List<FieldValueList> rows = validExampleResponseRows(fields, ROWS_LIMIT);
+        Page<FieldValueList> page = new PageImpl<>(null, null, rows);
+        return new TableResult(schema, ROWS_LIMIT, page);
+    }
+
+    private static List<FieldValueList> validExampleResponseRows(List<Field> fields, int rowsLimit) {
+        ExampleResponseItem defaultResponseItem = validExampleResponseItem();
+        List<FieldValue> row = new ArrayList<>();
+        List<FieldValueList> rows = new ArrayList<>();
+        for (int i = 0; i < rowsLimit; i++) {
+            fields.forEach(field -> {
+                row.add(FieldValue.of(FieldValue.Attribute.PRIMITIVE, defaultResponseItem.getId()));
+                row.add(FieldValue.of(FieldValue.Attribute.PRIMITIVE, defaultResponseItem.getCreationTimestamp()));
+                row.add(FieldValue.of(FieldValue.Attribute.PRIMITIVE, defaultResponseItem.getLastUpdateTimestamp()));
+                row.add(FieldValue.of(FieldValue.Attribute.PRIMITIVE, defaultResponseItem.getColumnA()));
+                row.add(FieldValue.of(FieldValue.Attribute.PRIMITIVE, defaultResponseItem.getColumnB()));
+            });
+            FieldValueList.of(row, FieldList.of(fields));
+        }
+        return rows;
+    }
+
+    private static ExampleResponseItem validExampleResponseItem() {
+        LocalDateTime now = LocalDateTime.now(TimeZone.getDefault().toZoneId());
+        String creationTimestamp = LocalDateTime.of(
+            2023, Month.JANUARY, 1,
+            now.getHour(), now.getMinute(), now.getSecond()
+        ).minusDays(3).format(DateTimeFormatter.ISO_DATE_TIME);
+        String lastUpdateTimestamp = LocalDateTime.ofInstant(
+            Instant.ofEpochSecond(now.toEpochSecond(ZoneOffset.UTC)),
+            TimeZone.getDefault().toZoneId()
+        ).format(DateTimeFormatter.ISO_DATE_TIME);
+        return ExampleResponseItem.builder()
+            .id("asdf-2345")
+            .creationTimestamp(creationTimestamp)
+            .lastUpdateTimestamp(lastUpdateTimestamp)
+            .columnA("column_a-test")
+            .columnB(String.valueOf(false))
+            .build();
+    }
 
 }

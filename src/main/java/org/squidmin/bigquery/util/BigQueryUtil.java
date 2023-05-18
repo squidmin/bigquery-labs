@@ -24,7 +24,7 @@ public class BigQueryUtil {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    public static List<ExampleResponseItem> toList(TableResult tableResult) {
+    public static List<ExampleResponseItem> toList(TableResult tableResult, SelectFieldsDefault selectFieldsDefault, boolean isSelectAll) {
         List<ExampleResponseItem> response = new ArrayList<>();
         if (null != tableResult && 0 < tableResult.getTotalRows()) {
             tableResult.iterateAll().forEach(
@@ -116,7 +116,7 @@ public class BigQueryUtil {
         Logger.log(String.format("PROFILE                         %s", System.getProperty("PROFILE")), Logger.LogType.CYAN);
         Logger.log(String.format("GCP_SA_KEY_PATH                 %s", System.getProperty("GCP_SA_KEY_PATH")), Logger.LogType.CYAN);
         Logger.log(String.format("GCP_ADC_ACCESS_TOKEN            %s", System.getProperty("GCP_ADC_ACCESS_TOKEN").substring(0, 9).concat("...")), Logger.LogType.CYAN);
-        Logger.log(String.format("GCP_SA_ACCESS_TOKEN             %s", System.getProperty("GCP_SA_ACCESS_TOKEN")).substring(0, 9).concat("..."), Logger.LogType.CYAN);
+        Logger.log(String.format("GCP_SA_ACCESS_TOKEN             %s", System.getProperty("GCP_SA_ACCESS_TOKEN").substring(0, 9).concat("...")), Logger.LogType.CYAN);
         Logger.log(String.format("GCP_DEFAULT_USER_PROJECT_ID     %s", System.getProperty("GCP_DEFAULT_USER_PROJECT_ID")), Logger.LogType.CYAN);
         Logger.log(String.format("GCP_DEFAULT_USER_DATASET        %s", System.getProperty("GCP_DEFAULT_USER_DATASET")), Logger.LogType.CYAN);
         Logger.log(String.format("GCP_DEFAULT_USER_TABLE          %s", System.getProperty("GCP_DEFAULT_USER_TABLE")), Logger.LogType.CYAN);
@@ -219,7 +219,7 @@ public class BigQueryUtil {
             return com.google.cloud.bigquery.Schema.of(fields);
         }
 
-        private static StandardSQLTypeName translateType(String type, DataTypes dataTypes) {
+        public static StandardSQLTypeName translateType(String type, DataTypes dataTypes) {
             if (dataTypes.getDataTypes().contains(type)) {
                 return StandardSQLTypeName.valueOf(type);
             } else {

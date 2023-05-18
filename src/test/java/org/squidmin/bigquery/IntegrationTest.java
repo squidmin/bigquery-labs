@@ -38,7 +38,7 @@ public abstract class IntegrationTest {
         gcpSaProjectIdCliOverride, gcpSaDatasetCliOverride, gcpSaTableCliOverride,
         schemaOverrideString;
 
-    protected SchemaDefault schemaDefault;
+//    protected SchemaDefault schemaDefault;
     protected com.google.cloud.bigquery.Schema _schemaOverride;
 
     // The default values of configured BigQuery resource properties can be overridden by the values of CLI arguments.
@@ -73,7 +73,7 @@ public abstract class IntegrationTest {
         gcpSaDatasetDefault = bqConfig.getGcpSaDataset();
         gcpSaTableDefault = bqConfig.getGcpSaTable();
 
-        schemaDefault = bqConfig.getSchemaDefault();
+//        schemaDefault = bqConfig.getSchemaDefault();
 
         // Set default run environment properties from Spring @Configuration classes.
         runEnvironment = RunEnvironment.builder()
@@ -125,7 +125,7 @@ public abstract class IntegrationTest {
         runEnvironment.setSchema(
             StringUtils.isNotEmpty(schemaOverrideString) ?
                 _schemaOverride :
-                BigQueryUtil.InlineSchemaTranslator.translate(schemaDefault, bqConfig.getDataTypes())
+                BigQueryUtil.InlineSchemaTranslator.translate(bqConfig.getSchemaDefault(), bqConfig.getDataTypes())
         );
     }
 

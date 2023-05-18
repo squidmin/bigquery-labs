@@ -87,7 +87,7 @@ public class IntegrationTestConfig {
     }
 
     @Bean
-    public SchemaDefault schema() {
+    public SchemaDefault schemaDefault() {
         return schemaDefault;
     }
 

@@ -3,10 +3,17 @@
 GCP BigQuery labs using the Java SDK.
 
 
+<details>
+<summary>About</summary>
+
 Made with:
-- **IntelliJ IDEA 2023.1 (Ultimate Edition)**
-- **openjdk 11.0.17**
+- **Adoptium Temurin OpenJDK 11.0.17**
 - **Apache Maven 3.8.7**
+- **IntelliJ IDEA 2023.1 (Ultimate Edition)**
+- **GoLand 2023.1 (Ultimate Edition)**
+- **PyCharm 2023.1 (Ultimate Edition)**
+
+</details>
 
 
 ---
@@ -48,11 +55,11 @@ export GCP_ADC_ACCESS_TOKEN="$(gcloud auth application-default print-access-toke
 Run this command to generate an access token for a specific GCP service account:
 
 ```shell
-export GCP_SA_ACCESS_TOKEN=$(gcloud auth print-access-token --impersonate-service-account='SA_EMAIL_ADDRESS')
+export GCP_SA_ACCESS_TOKEN=$(gcloud auth print-access-token --impersonate-service-account='GCP_SA_EMAIL_ADDRESS')
 ```
 
 **Replace the following**:
-- `SA_EMAIL_ADDRESS`: the email address of the service account to impersonate.
+- `GCP_SA_EMAIL_ADDRESS`: the email address of the service account to impersonate.
 
 Example:
 
@@ -116,6 +123,8 @@ so that the path to the service account key file is correct, e.g.:
 
 Read <a href="https://cloud.google.com/iam/docs/keys-create-delete#iam-service-account-keys-create-gcloud">here</a> for more information about creating service account keys.
 
+Read <a href="">here</a> for more information about run config CLI arguments.
+
 </details>
 
 
@@ -166,6 +175,8 @@ Or use `mvn clean install`:
   -DGCP_SA_TABLE=placeholder
 ```
 
+Read <a href="">here</a> for more information about run config CLI arguments.
+
 </details>
 
 
@@ -183,6 +194,8 @@ docker build \
   --build-arg GCP_SA_TABLE=${GCP_SA_TABLE} \
   -t bigquery-labs .
 ```
+
+Read <a href="">here</a> for more information about run config CLI arguments.
 
 </details>
 
@@ -204,14 +217,14 @@ Pass required environment variables on your local system to the VM options, as s
 
 ```shell
 ./mvnw \
-  -Dtest=BigQueryAdminClientIntegrationTest#createTableWithCustomSchema \
+  -Dtest=BigQueryAdminClientIntegrationTest#listDatasets \
   test -P integration \
   -DGCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
   -DGCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
+  -DGCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN \
   -DGCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
   -DGCP_DEFAULT_USER_DATASET=$GCP_DEFAULT_USER_DATASET \
-  -DGCP_DEFAULT_USER_TABLE=$GCP_DEFAULT_USER_TABLE \
-  -Dschema="id:STRING,creation_timestamp:DATETIME,last_update_timestamp:DATETIME,column_a:STRING,column_b:BOOL"
+  -DGCP_DEFAULT_USER_TABLE=$GCP_DEFAULT_USER_TABLE
 ```
 
 </details>
@@ -240,7 +253,7 @@ export GCP_ADC_ACCESS_TOKEN=$(gcloud auth application-default print-access-token
 The `GCP_SA_ACCESS_TOKEN` environment variable is used to store an OAuth2 access token for reaching BigQuery RESTful services _as a specific service account_.
 
 ```shell
-export GCP_SA_ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
+export GCP_SA_ACCESS_TOKEN=$(gcloud auth print-access-token --impersonate-service-account="sa-developer@your-sa-name.iam.gserviceaccount.com")
 ```
 
 ### Utility script (WIP)
@@ -274,6 +287,8 @@ docker run --rm -it \
   -v ${LOCAL_MAVEN_REPOSITORY}:${CONTAINER_MAVEN_REPOSITORY} \
   bigquery-labs
 ```
+
+Read <a href="">here</a> for more information about run config CLI arguments.
 
 ---
 
@@ -337,19 +352,19 @@ Or use long arguments:
 
   </details>
 
-- `-i SA_EMAIL_ADDRESS`, `--impersonate SA_EMAIL_ADDRESS`: Impersonate a GCP service account.
+- `-i GCP_SA_EMAIL_ADDRESS`, `--impersonate GCP_SA_EMAIL_ADDRESS`: Impersonate a GCP service account.
 
-  Replace `SA_EMAIL_ADDRESS` with the email address of the service account to impersonate.
+  Replace `GCP_SA_EMAIL_ADDRESS` with the email address of the service account to impersonate.
 
   <details>
   <summary>Example</summary>
 
   ```shell
-  ./run.sh --default -ci --impersonate-service-account SA_EMAIL_ADDRESS
+  ./run.sh --default -ci --impersonate-service-account GCP_SA_EMAIL_ADDRESS
   ```
 
   **Replace the following**:
-  - `SA_EMAIL_ADDRESS`: the impersonated service account's email address.
+  - `GCP_SA_EMAIL_ADDRESS`: the impersonated service account's email address.
 
   </details>
 

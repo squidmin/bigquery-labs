@@ -6,7 +6,7 @@ import com.google.cloud.bigquery.*;
 import org.squidmin.bigquery.config.DataTypes;
 import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
 import org.squidmin.bigquery.dao.RecordExample;
-import org.squidmin.bigquery.dto.ExampleResponseItem;
+import org.squidmin.bigquery.dto.sandbox.ExampleResponseItem;
 import org.squidmin.bigquery.util.BigQueryUtil;
 import org.squidmin.bigquery.util.RunEnvironment;
 
@@ -56,7 +56,7 @@ public class BigQueryTestFixture {
                 .build();
         }).collect(Collectors.toList());
 
-    public static TableResult validTableResultForExampleResponseItem(SchemaDefault schemaDefault, DataTypes dataTypes) {
+    public static TableResult validTableResultForExampleResponse(SchemaDefault schemaDefault, DataTypes dataTypes) {
         List<Field> fields = new ArrayList<>();
         schemaDefault.getFields().forEach(field ->
             fields.add(
@@ -85,7 +85,6 @@ public class BigQueryTestFixture {
                 row.add(FieldValue.of(FieldValue.Attribute.PRIMITIVE, defaultResponseItem.getColumnA()));
                 row.add(FieldValue.of(FieldValue.Attribute.PRIMITIVE, defaultResponseItem.getColumnB()));
             });
-            FieldValueList.of(row, FieldList.of(fields));
         }
         return rows;
     }

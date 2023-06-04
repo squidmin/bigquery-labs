@@ -1,22 +1,20 @@
-package org.squidmin.bigquery.dto;
+package org.squidmin.bigquery.dto.other;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-@Slf4j
-public class ExampleResponse {
+@NoArgsConstructor
+public class OtherResponse {
 
-    private List<ExampleResponseItem> body;
+    private List<OtherResponseItem> body;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<String> errors;

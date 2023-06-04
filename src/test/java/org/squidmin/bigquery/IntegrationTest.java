@@ -1,6 +1,7 @@
 package org.squidmin.bigquery;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,12 +11,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 import org.squidmin.bigquery.config.BigQueryConfig;
 import org.squidmin.bigquery.config.IntegrationTestConfig;
-import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
 import org.squidmin.bigquery.fixture.BigQueryTestFixture;
 import org.squidmin.bigquery.service.BigQueryAdminClient;
 import org.squidmin.bigquery.util.BigQueryUtil;
 import org.squidmin.bigquery.util.RunEnvironment;
-import org.squidmin.bigquery.util.StringUtils;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {BigQueryAdminClient.class, IntegrationTestConfig.class})

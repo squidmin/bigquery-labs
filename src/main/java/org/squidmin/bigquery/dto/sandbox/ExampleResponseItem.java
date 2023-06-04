@@ -1,10 +1,11 @@
-package org.squidmin.bigquery.dto;
+package org.squidmin.bigquery.dto.sandbox;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.squidmin.bigquery.logger.Logger;
 
 @Data
 @Builder
@@ -31,7 +32,7 @@ public class ExampleResponseItem {
         } else if (name.equalsIgnoreCase("column_b")) {
             setColumnB(value);
         } else {
-            log.error("Value associated with name is null.");
+            Logger.log("Value associated with name is null.", Logger.LogType.ERROR);
         }
     }
 

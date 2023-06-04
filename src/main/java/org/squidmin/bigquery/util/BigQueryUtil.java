@@ -5,9 +5,14 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.bigquery.*;
 import lombok.extern.slf4j.Slf4j;
 import org.squidmin.bigquery.config.DataTypes;
+import org.squidmin.bigquery.config.tables.other.SchemaOther;
+import org.squidmin.bigquery.config.tables.other.SelectFieldsOther;
 import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
 import org.squidmin.bigquery.config.tables.sandbox.SelectFieldsDefault;
-import org.squidmin.bigquery.dto.ExampleResponseItem;
+import org.squidmin.bigquery.dto.bigquery.BigQuerySchemaItem;
+import org.squidmin.bigquery.dto.other.OtherResponse;
+import org.squidmin.bigquery.dto.other.OtherResponseItem;
+import org.squidmin.bigquery.dto.sandbox.ExampleResponseItem;
 import org.squidmin.bigquery.dto.bigquery.BigQueryRestServiceResponse;
 import org.squidmin.bigquery.dto.bigquery.BigQueryRow;
 import org.squidmin.bigquery.dto.bigquery.BigQueryRowValue;
@@ -28,15 +33,18 @@ public class BigQueryUtil {
         List<ExampleResponseItem> response = new ArrayList<>();
         if (null != tableResult && 0 < tableResult.getTotalRows()) {
             tableResult.iterateAll().forEach(
-                row -> response.add(
-                    ExampleResponseItem.builder()
-                        .id(row.get(0).getStringValue())
-                        .creationTimestamp(row.get(1).getStringValue())
-                        .lastUpdateTimestamp(row.get(2).getStringValue())
-                        .columnA(row.get(3).getStringValue())
-                        .columnB(row.get(4).getStringValue())
-                        .build()
-                )
+                row -> {
+                    List<String> fields = selectFieldsDefault.getFields();
+                    response.add(
+                        ExampleResponseItem.builder()
+                            .id(row.get(fields.get(0)).getStringValue())
+                            .creationTimestamp(row.get(fields.get(1)).getStringValue())
+                            .lastUpdateTimestamp(row.get(fields.get(2)).getStringValue())
+                            .columnA(row.get(fields.get(3)).getStringValue())
+                            .columnB(row.get(fields.get(4)).getStringValue())
+                            .build()
+                    );
+                }
             );
         }
         return response;
@@ -51,14 +59,16 @@ public class BigQueryUtil {
                 ExampleResponseItem exampleResponseItem = new ExampleResponseItem();
                 List<BigQueryRowValue> f = r.getF();
                 if (!isSelectAll) {
-                    for (int j = 0; j < selectFieldsDefault.getFields().size(); j++) {
-                        String name = selectFieldsDefault.getFields().get(j);
+                    List<String> fields = selectFieldsDefault.getFields();
+                    for (int j = 0; j < fields.size(); j++) {
+                        String name = fields.get(j);
                         setResponseItem(exampleResponseItem, f, j, name);
                     }
                     response.add(exampleResponseItem);
                 } else {
-                    for (int j = 0; j < bqResponse.getSchema().getFields().size(); j++) {
-                        String name = bqResponse.getSchema().getFields().get(j).getName();
+                    List<BigQuerySchemaItem> fields = bqResponse.getSchema().getFields();
+                    for (int j = 0; j < fields.size(); j++) {
+                        String name = fields.get(j).getName();
                         setResponseItem(exampleResponseItem, f, j, name);
                     }
                     response.add(exampleResponseItem);
@@ -66,6 +76,10 @@ public class BigQueryUtil {
             }
         }
         return response;
+    }
+
+    public static List<OtherResponseItem> toList(byte[] tableResult, SelectFieldsOther selectFieldsOther, boolean isSelectAll) throws IOException {
+        return null;
     }
 
     private static void setResponseItem(ExampleResponseItem exampleResponseItem, List<BigQueryRowValue> f, int index, String name) {
@@ -179,6 +193,24 @@ public class BigQueryUtil {
         Logger.log(String.format("Service account Table name: %s", gcpSaTable), Logger.LogType.INFO);
     }
 
+    public static void logTable(OtherResponse response, SchemaOther schemaOther) {
+        AsciiTable table = new AsciiTable();
+        table.setMaxColumnWidth(45);
+
+//        table.getColumns().add(new AsciiTable.Column("my column"));
+//
+//        for (String value : myListOfValues) {
+//
+//            AsciiTable.Row row = new AsciiTable.Row();
+//            table.getData().add(row);
+//            row.getValues().add(value);
+//        }
+
+
+        table.calculateColumnWidth();
+        table.render();
+    }
+
     public static class InlineSchemaTranslator {
         public static Schema translate(SchemaDefault schemaDefault, DataTypes dataTypes) {
             Logger.log(String.format("Generating Schema object using: \"%s\"...", schemaDefault.getFields()), Logger.LogType.CYAN);
@@ -231,6 +263,14 @@ public class BigQueryUtil {
                 return StandardSQLTypeName.STRING;
             }
         }
+    }
+
+    public enum CLI_ARG_KEYS {
+        GCP_SA_KEY_PATH, GCP_ADC_ACCESS_TOKEN, GCP_SA_ACCESS_TOKEN,
+        GCP_DEFAULT_USER_PROJECT_ID, GCP_DEFAULT_USER_DATASET, GCP_DEFAULT_USER_TABLE,
+        GCP_SA_PROJECT_ID, GCP_SA_DATASET, GCP_SA_TABLE,
+        SCHEMA,
+        QUERY
     }
 
 }

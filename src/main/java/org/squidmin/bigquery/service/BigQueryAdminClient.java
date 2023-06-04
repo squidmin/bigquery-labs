@@ -4,6 +4,8 @@ import autovalue.shaded.com.google.common.collect.ImmutableMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.bigquery.*;
+import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.*;
@@ -12,17 +14,19 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.squidmin.bigquery.config.BigQueryConfig;
 import org.squidmin.bigquery.config.DataTypes;
+import org.squidmin.bigquery.config.tables.other.SchemaOther;
+import org.squidmin.bigquery.config.tables.other.SelectFieldsOther;
+import org.squidmin.bigquery.config.tables.other.WhereFieldsOther;
 import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
 import org.squidmin.bigquery.config.tables.sandbox.SelectFieldsDefault;
 import org.squidmin.bigquery.config.tables.sandbox.WhereFieldsDefault;
 import org.squidmin.bigquery.dao.RecordExample;
-import org.squidmin.bigquery.dto.ExampleResponse;
-import org.squidmin.bigquery.dto.ExampleResponseItem;
+import org.squidmin.bigquery.dto.sandbox.ExampleResponse;
+import org.squidmin.bigquery.dto.sandbox.ExampleResponseItem;
 import org.squidmin.bigquery.dto.bigquery.Query;
 import org.squidmin.bigquery.exception.CustomJobException;
 import org.squidmin.bigquery.logger.Logger;
 import org.squidmin.bigquery.util.BigQueryUtil;
-import org.squidmin.bigquery.util.StringUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -31,10 +35,14 @@ import java.util.*;
 @Service
 @EnableConfigurationProperties(value = {
     SchemaDefault.class,
+    SchemaOther.class,
     SelectFieldsDefault.class,
+    SelectFieldsOther.class,
     WhereFieldsDefault.class,
+    WhereFieldsOther.class,
     DataTypes.class,
 })
+@Getter
 public class BigQueryAdminClient {
 
     private final String gcpDefaultUserProjectId, gcpDefaultUserDataset, gcpDefaultUserTable;

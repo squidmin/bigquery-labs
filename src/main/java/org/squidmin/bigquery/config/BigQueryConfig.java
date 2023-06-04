@@ -7,15 +7,19 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.squidmin.bigquery.config.tables.other.SchemaOther;
+import org.squidmin.bigquery.config.tables.other.SelectFieldsOther;
+import org.squidmin.bigquery.config.tables.other.WhereFieldsOther;
 import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
 import org.squidmin.bigquery.config.tables.sandbox.SelectFieldsDefault;
 import org.squidmin.bigquery.config.tables.sandbox.WhereFieldsDefault;
 import org.squidmin.bigquery.logger.Logger;
-import org.squidmin.bigquery.util.StringUtils;
+import org.squidmin.bigquery.util.BigQueryUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,9 +48,15 @@ public class BigQueryConfig {
     private final String queryUri;
 
     private final SchemaDefault schemaDefault;
-    private final DataTypes dataTypes;
+    private final SchemaOther schemaOther;
+
     private final SelectFieldsDefault selectFieldsDefault;
+    private final SelectFieldsOther selectFieldsOther;
+
     private final WhereFieldsDefault whereFieldsDefault;
+    private final WhereFieldsOther whereFieldsOther;
+
+    private final DataTypes dataTypes;
 
     private final BigQuery bigQuery;
 
@@ -59,9 +69,12 @@ public class BigQueryConfig {
                           @Value("${bigquery.service-account.table}") String gcpSaTable,
                           @Value("${bigquery.uri.queries}") String queryUri,
                           SchemaDefault schemaDefault,
-                          DataTypes dataTypes,
+                          SchemaOther schemaOther,
                           SelectFieldsDefault selectFieldsDefault,
-                          WhereFieldsDefault whereFieldsDefault) {
+                          SelectFieldsOther selectFieldsOther,
+                          WhereFieldsDefault whereFieldsDefault,
+                          WhereFieldsOther whereFieldsOther,
+                          DataTypes dataTypes) {
 
         this.gcpDefaultUserProjectId = gcpDefaultUserProjectId;
         this.gcpDefaultUserDataset = gcpDefaultUserDataset;
@@ -73,20 +86,25 @@ public class BigQueryConfig {
 
         this.queryUri = queryUri;
 
-        this.gcpSaKeyPath = System.getProperty("GCP_SA_KEY_PATH");
+        this.gcpSaKeyPath = System.getProperty(BigQueryUtil.CLI_ARG_KEYS.GCP_SA_KEY_PATH.name());
 //        Logger.log(String.format("BQ JDK: GCP_SA_KEY_PATH == %s", this.gcpSaKeyPath), Logger.LogType.CYAN);
         File credentialsPath = new File(gcpSaKeyPath);
 
-        this.gcpAdcAccessToken = System.getProperty("GCP_ADC_ACCESS_TOKEN");
+        this.gcpAdcAccessToken = System.getProperty(BigQueryUtil.CLI_ARG_KEYS.GCP_ADC_ACCESS_TOKEN.name());
 //        Logger.log(String.format("GCP_ADC_ACCESS_TOKEN == %s", this.gcpAdcAccessToken), Logger.LogType.CYAN);
 
-        this.gcpSaAccessToken = System.getProperty("GCP_SA_ACCESS_TOKEN");
+        this.gcpSaAccessToken = System.getProperty(BigQueryUtil.CLI_ARG_KEYS.GCP_SA_ACCESS_TOKEN.name());
 //        Logger.log(String.format("GCP_SA_ACCESS_TOKEN == %s", this.gcpSaAccessToken), Logger.LogType.CYAN);
 
         this.schemaDefault = schemaDefault;
-        this.dataTypes = dataTypes;
+        this.schemaOther = schemaOther;
+
         this.selectFieldsDefault = selectFieldsDefault;
+        this.selectFieldsOther = selectFieldsOther;
         this.whereFieldsDefault = whereFieldsDefault;
+        this.whereFieldsOther = whereFieldsOther;
+
+        this.dataTypes = dataTypes;
 
         BigQueryOptions.Builder bqOptionsBuilder = BigQueryOptions.newBuilder();
         bqOptionsBuilder.setProjectId(gcpDefaultUserProjectId).setLocation("us");

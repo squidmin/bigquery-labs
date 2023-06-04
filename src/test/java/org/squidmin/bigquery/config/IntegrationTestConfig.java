@@ -7,6 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
+import org.squidmin.bigquery.config.tables.other.SchemaOther;
+import org.squidmin.bigquery.config.tables.other.SelectFieldsOther;
+import org.squidmin.bigquery.config.tables.other.WhereFieldsOther;
 import org.squidmin.bigquery.config.tables.sandbox.SchemaDefault;
 import org.squidmin.bigquery.config.tables.sandbox.SelectFieldsDefault;
 import org.squidmin.bigquery.config.tables.sandbox.WhereFieldsDefault;
@@ -41,13 +44,22 @@ public class IntegrationTestConfig {
     private SchemaDefault schemaDefault;
 
     @Autowired
-    private DataTypes dataTypes;
+    private SchemaOther schemaOther;
 
     @Autowired
     private SelectFieldsDefault selectFieldsDefault;
 
     @Autowired
+    private SelectFieldsOther selectFieldsOther;
+
+    @Autowired
     private WhereFieldsDefault whereFieldsDefault;
+
+    @Autowired
+    private WhereFieldsOther whereFieldsOther;
+
+    @Autowired
+    private DataTypes dataTypes;
 
     private BigQueryConfig bqConfig;
 
@@ -92,18 +104,31 @@ public class IntegrationTestConfig {
     }
 
     @Bean
+    public SchemaOther schemaOther() { return schemaOther; }
+
+    @Bean
     public DataTypes dataTypes() {
         return dataTypes;
     }
 
     @Bean
-    public SelectFieldsDefault selectFields() {
+    public SelectFieldsDefault selectFieldsDefault() {
         return selectFieldsDefault;
     }
 
     @Bean
-    public WhereFieldsDefault whereFields() {
+    public SelectFieldsOther selectFieldsOther() {
+        return selectFieldsOther;
+    }
+
+    @Bean
+    public WhereFieldsDefault whereFieldsDefault() {
         return whereFieldsDefault;
+    }
+
+    @Bean
+    public WhereFieldsOther whereFieldsOther() {
+        return whereFieldsOther;
     }
 
     @Bean
@@ -122,9 +147,12 @@ public class IntegrationTestConfig {
             gcpSaTable,
             queryUri,
             schemaDefault,
-            dataTypes,
+            schemaOther,
             selectFieldsDefault,
-            whereFieldsDefault
+            selectFieldsOther,
+            whereFieldsDefault,
+            whereFieldsOther,
+            dataTypes
         );
         return bqConfig;
     }

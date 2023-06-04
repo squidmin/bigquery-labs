@@ -19,25 +19,25 @@ while [[ $# -gt 0 ]]; do
       ;;
     -sakp|--GCP_SA_KEY_PATH)
       GCP_SA_KEY_PATH="$2"
-      shift # past argument
-      shift # past value
+      shift; # past argument
+      shift; # past value
       ;;
     -adcat|--GCP_ADC_ACCESS_TOKEN)
       GCP_ADC_ACCESS_TOKEN="$2"
-      shift # past argument
-      shift # past value
+      shift; # past argument
+      shift; # past value
       ;;
     -saat|--GCP_SA_ACCESS_TOKEN)
       GCP_SA_ACCESS_TOKEN="$2"
-      shift # past argument
-      shift # past value
+      shift; # past argument
+      shift; # past value
       ;;
     -i|--impersonate)
       IMPERSONATED_SERVICE_ACCOUNT="$2"
       echo "Attempting impersonation of service account: $2"
       GCP_SA_ACCESS_TOKEN=$(gcloud auth print-access-token --impersonate-service-account="${IMPERSONATED_SERVICE_ACCOUNT}")
-      shift # past argument
-      shift # past value
+      shift; # past argument
+      shift; # past value
       ;;
     --default)
       DEFAULT=YES
@@ -50,17 +50,17 @@ while [[ $# -gt 0 ]]; do
       GCP_SA_KEY_PATH=${LOCAL_GCLOUD_AUTH_DIRECTORY}/${GCLOUD_SA_KEY_FILENAME}
       GCP_ADC_ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
       GCP_SA_ACCESS_TOKEN=sa_access_token_placeholder
-      shift # past argument
+      shift; # past argument
       ;;
     -ci|--container-instance)
       CONTAINER_INSTANCE=YES
       GCP_SA_KEY_PATH=${CONTAINER_GCLOUD_AUTH_DIRECTORY}/${GCLOUD_SA_KEY_FILENAME}
-      shift # past argument
+      shift; # past argument
       ;;
     -nci|--no-container-instance)
       CONTAINER_INSTANCE=NO
       GCP_SA_KEY_PATH=${LOCAL_GCLOUD_AUTH_DIRECTORY}/${GCLOUD_SA_KEY_FILENAME}
-      shift # past argument
+      shift; # past argument
       ;;
     -*|--*)
       echo "Unknown option $1"
@@ -68,7 +68,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       POSITIONAL_ARGS+=("$1") # save positional arg
-      shift # past argument
+      shift; # past argument
       ;;
   esac
 done
